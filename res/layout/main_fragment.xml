@@ -207,10 +207,11 @@
         </GridView>
     </LinearLayout>
     
-    <Gallery 
+    <cn.com.pcgroup.android.pchouse.view.SingleModeGallery 
         android:visibility="gone"
         android:id="@+id/gallery"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent">
+    </cn.com.pcgroup.android.pchouse.view.SingleModeGallery>
 
 </cn.com.pcgroup.android.pchouse.view.SlideView>

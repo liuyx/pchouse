@@ -40,14 +40,14 @@ public class ImageAdapter extends BaseAdapter {
 	private Intent startService;
 	private MyServiceConnection conn;
 	private FrameLayout.LayoutParams p;
-	
-	
+
+
 	private int mode = MANY_MODE;
-	
+
 	public void setIntent(Intent startService){
 		this.startService = startService;
 	}
-	
+
 	public void setServiceConnection(MyServiceConnection conn){
 		this.conn = conn;
 	}
@@ -56,7 +56,7 @@ public class ImageAdapter extends BaseAdapter {
 			ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners) {
 		this.tasksAndListeners = tasksAndListeners;
 	}
-	
+
 	public void setMode(int mode){
 		this.mode = mode;
 	}
@@ -65,16 +65,16 @@ public class ImageAdapter extends BaseAdapter {
 			HashMap<String, Integer> urlStates,Activity context) {
 		this(magsData,urlStates,context,null);
 	}
-	
+
 	public ImageAdapter(ArrayList<BookShelf> magsData,HashMap<String, Integer> urlStates,Activity context,FrameLayout.LayoutParams p){
 		this.magsData = magsData;
 		taskUrlStates = urlStates;
-		
+
 		mainActivity = context;
 		this.p = p;
 		fillEachItemState();
 	}
-	
+
 	/**
 	 * 将每个url的状态写到eachItemState容器中
 	 */
@@ -174,7 +174,7 @@ public class ImageAdapter extends BaseAdapter {
 								.getIssue() : "");
 				holder.size.setText(bookShelf.getSize() != null ? bookShelf
 						.getSize() : "0MB");
-				
+
 				String summary = bookShelf.getSummary();
 				if(summary != null){
 					holder.summary.setText(summary);
@@ -281,19 +281,19 @@ public class ImageAdapter extends BaseAdapter {
 			getLastTimeDownloadProgress(taskUrl);
 			//启动下载服务
 			startDownloadService(pos,tasksAndListeners.get(pos).task);
-			
+
 			MainFragment.showRunning(views, byteNums, totalBytes);
 		}
 	}
-	
+
 	private long byteNums;
 	private long totalBytes;
-	
+
 	private void getLastTimeDownloadProgress(String taskUrl){
 		byteNums = PreferencesUtils.getPreference(mainActivity, MainFragment.PREF_NAME, taskUrl+"byteNums", 0);
 		totalBytes = PreferencesUtils.getPreference(mainActivity, MainFragment.PREF_NAME, taskUrl+"totalBytes", 0);
 	}
-	
+
 	private void startDownloadService(int pos,DownloadTask task){
 		final Intent service = startService;
 		if(service != null){

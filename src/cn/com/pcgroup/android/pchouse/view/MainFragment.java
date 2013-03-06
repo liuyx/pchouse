@@ -66,7 +66,7 @@ public class MainFragment extends Fragment {
 	 * 设置Gridview每一个Item运行和暂停切换的标志
 	 */
 	static int[] isStartServices;
-	
+
 	/**
 	 * 切换书架单本模式和多本模式的变量
 	 */
@@ -127,7 +127,7 @@ public class MainFragment extends Fragment {
 	 * 能够滑动的自定义LinearLayout
 	 */
 	private SlideView slideView;
-	
+
 	private LinearLayout gridLayout;
 	private GridView grid;
 	private Gallery gallery;
@@ -181,14 +181,14 @@ public class MainFragment extends Fragment {
 		slideView = (SlideView) mainActivity.findViewById(R.id.slideview);
 		gridLayout = (LinearLayout) mainActivity.findViewById(R.id.grid_layout);
 		grid = (GridView) mainActivity.findViewById(R.id.grid);
-		
+
 		FrameLayout.LayoutParams gridP = new FrameLayout.LayoutParams(
 				getGridViewImgWidth(),
 				(int) (getGridViewImgWidth() * 1.5));
 		setAdapterViewAdapter(grid, gridP);
 		setAdapterViewItemClickListener(grid, true);
 		setAdapterViewItemLongClick(grid,false);
-		
+
 		gallery = (Gallery) mainActivity.findViewById(R.id.gallery);
 		FrameLayout.LayoutParams galleryP = new FrameLayout.LayoutParams(
 				getDisplayWidth() / 2,
@@ -197,7 +197,7 @@ public class MainFragment extends Fragment {
 		setAdapterViewItemClickListener(gallery, false);
 		setAdapterViewItemLongClick(gallery,true);
 		
-		
+
 		set = (ImageView) mainActivity.findViewById(R.id.set);
 		set.setOnClickListener(listener);
 		redOK = (ImageView) mainActivity.findViewById(R.id.red_ok);
@@ -225,7 +225,7 @@ public class MainFragment extends Fragment {
 				isStartServices = new int[size];
 				getStatesFromPrefForMap(datas);
 				test(urlStates);
-				
+
 				adapter = new ImageAdapter(datas, urlStates,
 						mainActivity,p);
 				adapter.setTasksAndListeners(globalTaskAndListeners);
@@ -238,7 +238,7 @@ public class MainFragment extends Fragment {
 		}
 		return adapter;
 	}
-	
+
 
 	public static void test(HashMap<String, Integer> urlStates) {
 		Log.v("liuyouxue", "==========test for hashMap===============");
@@ -295,7 +295,7 @@ public class MainFragment extends Fragment {
 		}
 		return null;
 	}
-	
+
 	public ImageView getDoneImg(int pos){
 		final ViewHolder views = getTaskViews(pos);
 		if(views != null)
@@ -446,7 +446,7 @@ public class MainFragment extends Fragment {
 		}
 	}
 
-	
+
 	private void setAdapterViewItemLongClick(AdapterView<? super BaseAdapter> adapterView,final boolean isGallery){
 		adapterView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
@@ -460,7 +460,7 @@ public class MainFragment extends Fragment {
 			}
 		});
 	}
-	
+
 	private void setAdapterViewItemClickListener(AdapterView<? super BaseAdapter> adapterView, final boolean isGridView){
 		adapterView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -478,8 +478,8 @@ public class MainFragment extends Fragment {
 			}
 		});
 	}
-	
-	
+
+
 	private void performAdapterViewOnItemLongClick(){
 		longTouchHeader.setVisibility(View.VISIBLE);
 		normalHeader.setVisibility(View.GONE);
@@ -488,7 +488,7 @@ public class MainFragment extends Fragment {
 
 		setLongTouchHeaderState();
 	}
-	
+
 	private void performAdapterViewOnItemClick(int position){
 		/**
 		 * 第一次点击某个任务时启动下载服务然后退出该方法
@@ -497,7 +497,7 @@ public class MainFragment extends Fragment {
 		// 以后该任务就在运行和暂停状态切换
 		flipStartAndPause(position);
 	}
-	
+
 	public class MyDialogClickListener implements DialogInterface.OnClickListener{
 		private int pos;
 		public DialogInterface.OnClickListener setPos(int pos){
@@ -510,7 +510,7 @@ public class MainFragment extends Fragment {
 			delMagazine(pos);
 		}
 	}
-	
+
 	private MyDialogClickListener dialogClickListener;
 
 	private boolean showDelDialog(final int pos) {
@@ -519,7 +519,7 @@ public class MainFragment extends Fragment {
 			if(builder == null){
 				builder = new Builder(mainActivity);
 				builder.setMessage("确认删除").setTitle("删除杂志");
-				
+
 				builder.setNegativeButton("取消", new OnClickListener() {
 
 					@Override
@@ -527,7 +527,7 @@ public class MainFragment extends Fragment {
 						dialog.dismiss();
 					}
 				});
-				
+
 				if(dialogClickListener == null){
 					dialogClickListener = new MyDialogClickListener();
 				}
@@ -731,12 +731,12 @@ public class MainFragment extends Fragment {
 			}
 			loadingProgress.setVisibility(View.GONE);
 		}
-		
+
 		ImageView loadingDone = getDoneImg(pos);
 		if(loadingDone != null)
 			loadingDone.setVisibility(View.GONE);
 	}
-	
+
 
 	/**
 	 * 长按Gridview设置标题view的显示状态
@@ -783,12 +783,12 @@ public class MainFragment extends Fragment {
 	private void onDelFreshTaskData(int pos) {
 		int state = getTaskState(pos);
 		DownloadTask task = getTask(pos);
-		
+
 		//清空监听器的占用空间数据
 		MultiDownListenerAndViews listAndViews = getListenerAndViews(pos);
 		if(listAndViews != null)
 			listAndViews.clearOccupyData();
-		
+
 		//更新头部数据
 		if (state == DownloadTaskState.PAUSE_STATE) {
 			headerStateCount.downloading--;
@@ -843,7 +843,7 @@ public class MainFragment extends Fragment {
 			}
 		}
 	};
-	
+
 	private void flipGalleryAndGridView(){
 		flipGalleryAndGridView ^= FLIP_MASK;
 		if(flipGalleryAndGridView == 1){ //显示单本模式
@@ -1006,7 +1006,7 @@ public class MainFragment extends Fragment {
 
 			if (views.magazingDel != null)
 				views.magazingDel.setVisibility(View.GONE);
-			
+
 			if(views.loadingDone != null)
 				views.loadingDone.setVisibility(View.GONE);
 		}
@@ -1042,7 +1042,7 @@ public class MainFragment extends Fragment {
 
 			if (views.magazingDel != null)
 				views.magazingDel.setVisibility(View.GONE);
-			
+
 			if(views.loadingDone != null)
 				views.loadingDone.setVisibility(View.GONE);
 			return finPercent;
@@ -1074,7 +1074,7 @@ public class MainFragment extends Fragment {
 
 			if (views.magazingDel != null)
 				views.magazingDel.setVisibility(View.GONE);
-			
+
 			if(views.loadingDone != null)
 				views.loadingDone.setVisibility(View.VISIBLE);
 		}
@@ -1088,7 +1088,7 @@ public class MainFragment extends Fragment {
 				MultiDownListenerAndViews listener) {
 			this.task = task;
 			this.listenerAndViews = listener;
-			
+
 		}
 	}
 
@@ -1130,7 +1130,7 @@ public class MainFragment extends Fragment {
 		public void setOnSignTaskState(SignTaskState state) {
 			signState = state;
 		}
-		
+
 		public void setState(int state){
 			this.state = state;
 		}
@@ -1149,7 +1149,7 @@ public class MainFragment extends Fragment {
 		public void setDownloadingViews(ViewHolder views) {
 			this.views = views;
 		}
-		
+
 		/**
 		 * 删除杂志时，需清空该监听器的占用空间
 		 */
