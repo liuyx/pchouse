@@ -71,8 +71,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginLeft="23dip"
-        android:layout_marginRight="23dip"
-        android:orientation="horizontal" >
+        android:layout_marginRight="23dip" >
 
         <TextView
             android:id="@+id/text1"
@@ -86,5 +85,13 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true" />
     </RelativeLayout>
+    
+    <TextView 
+        android:visibility="gone"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="18dp"
+        android:id="@+id/summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>

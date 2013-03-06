@@ -27,8 +27,12 @@ import cn.com.pcgroup.android.pchouse.view.MainFragment.MyServiceConnection;
 import cn.com.pcgroup.common.android.utils.PreferencesUtils;
 
 public class ImageAdapter extends BaseAdapter {
+	//此ImageAdapter为书架单本模式和多本模式进行适配,默认为多本模式适配
+	public static final int MANY_MODE = 0;
+	public static final int SINGLE_MODE = 1;
 	private ArrayList<BookShelf> magsData;
 	private ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners;
+	private static Activity mainActivity;
 	/**
 	 * 各个任务的状态
 	 */
@@ -36,7 +40,10 @@ public class ImageAdapter extends BaseAdapter {
 	private final SparseIntArray eachItemState = new SparseIntArray();
 	private Intent startService;
 	private MyServiceConnection conn;
-	private static Activity mainActivity;
+	private FrameLayout.LayoutParams p;
+	
+	
+	private int mode = MANY_MODE;
 	
 	public void setIntent(Intent startService){
 		this.startService = startService;
@@ -50,13 +57,22 @@ public class ImageAdapter extends BaseAdapter {
 			ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners) {
 		this.tasksAndListeners = tasksAndListeners;
 	}
+	
+	public void setMode(int mode){
+		this.mode = mode;
+	}
 
 	public ImageAdapter(ArrayList<BookShelf> magsData,
 			HashMap<String, Integer> urlStates,Activity context) {
+		this(magsData,urlStates,context,null);
+	}
+	
+	public ImageAdapter(ArrayList<BookShelf> magsData,HashMap<String, Integer> urlStates,Activity context,FrameLayout.LayoutParams p){
 		this.magsData = magsData;
 		taskUrlStates = urlStates;
 		
 		mainActivity = context;
+		this.p = p;
 		fillEachItemState();
 	}
 	
@@ -98,14 +114,13 @@ public class ImageAdapter extends BaseAdapter {
 		ViewHolder holder;
 		if (convertView == null) {
 			holder = new ViewHolder();
-			convertView = LayoutInflater.from(mainActivity.getApplicationContext()).inflate(
+			convertView = LayoutInflater.from(mainActivity).inflate(
 					R.layout.img_adapter, null);
 			holder.magazineImg = (ImageView) convertView
 					.findViewById(R.id.image);
-			holder.magazineImg
-					.setLayoutParams(new FrameLayout.LayoutParams(
-							getGridViewImgWidth(),
-							(int) (getGridViewImgWidth() * 1.5)));
+			if (p != null) {
+				holder.magazineImg.setLayoutParams(p);
+			}
 			holder.magazineImg
 					.setScaleType(ImageView.ScaleType.CENTER_CROP);
 			holder.month = (TextView) convertView.findViewById(R.id.text1);
@@ -121,6 +136,12 @@ public class ImageAdapter extends BaseAdapter {
 			holder.loadingDone = (ImageView) convertView.findViewById(R.id.img_right_top_done);
 			holder.progsBar = (ProgressBar) convertView
 					.findViewById(R.id.loadprogress);
+			holder.summary = (TextView) convertView.findViewById(R.id.summary);
+			if(mode == MANY_MODE){
+				holder.summary.setVisibility(View.GONE);
+			}else{
+				holder.summary.setVisibility(View.VISIBLE);
+			}
 			convertView.setTag(holder);
 		} else {
 			holder = (ViewHolder) convertView.getTag();
@@ -142,6 +163,7 @@ public class ImageAdapter extends BaseAdapter {
 		ImageView magazingDel; //删除杂志图标
 		ImageView loadingDone; //加载完成图标
 		ProgressBar progsBar;
+		TextView summary; //简介,用于单本模式下的内容介绍
 	}
 
 	private String loadEachItem(int position, ViewHolder holder) {
@@ -153,13 +175,18 @@ public class ImageAdapter extends BaseAdapter {
 								.getIssue() : "");
 				holder.size.setText(bookShelf.getSize() != null ? bookShelf
 						.getSize() : "0MB");
+				
+				String summary = bookShelf.getSummary();
+				if(summary != null){
+					holder.summary.setText(summary);
+				}
 				String magazineImgUrl = bookShelf.getCover();
 
 				if (magazineImgUrl != null && !magazineImgUrl.equals("")
 						&& !magazineImgUrl.equals("null")) {
 					holder.magazineImg.setTag(magazineImgUrl);
 					AsynLoadImageUtils.getInstance().loadAndFillImg(
-							mainActivity.getApplicationContext(), holder.magazineImg, magazineImgUrl,
+							mainActivity, holder.magazineImg, magazineImgUrl,
 							false, holder.progsBar);
 				}
 				return magazineImgUrl;
@@ -264,8 +291,8 @@ public class ImageAdapter extends BaseAdapter {
 	private long totalBytes;
 	
 	private void getLastTimeDownloadProgress(String taskUrl){
-		byteNums = PreferencesUtils.getPreference(mainActivity.getApplicationContext(), MainFragment.PREF_NAME, taskUrl+"byteNums", 0);
-		totalBytes = PreferencesUtils.getPreference(mainActivity.getApplicationContext(), MainFragment.PREF_NAME, taskUrl+"totalBytes", 0);
+		byteNums = PreferencesUtils.getPreference(mainActivity, MainFragment.PREF_NAME, taskUrl+"byteNums", 0);
+		totalBytes = PreferencesUtils.getPreference(mainActivity, MainFragment.PREF_NAME, taskUrl+"totalBytes", 0);
 	}
 	
 	private void startDownloadService(int pos,DownloadTask task){
@@ -277,14 +304,5 @@ public class ImageAdapter extends BaseAdapter {
 			MainFragment.isStartServices[pos] ^= MainFragment.FLIP_MASK;
 		}
 	}
-	
-	public static int getGridViewImgWidth() {
-		return getDisplayWidth() / 3 - 3;
-	}
-
-	private static int getDisplayWidth() {
-		return ((Activity) mainActivity).getWindowManager().getDefaultDisplay().getWidth();
-	}
-
 
 }

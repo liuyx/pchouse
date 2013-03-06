@@ -169,6 +169,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/grid_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#F2EFEA"
@@ -205,5 +206,11 @@
             android:verticalSpacing="15dip" >
         </GridView>
     </LinearLayout>
+    
+    <Gallery 
+        android:visibility="gone"
+        android:id="@+id/gallery"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </cn.com.pcgroup.android.pchouse.view.SlideView>

@@ -27,8 +27,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
+import android.widget.BaseAdapter;
+import android.widget.FrameLayout;
+import android.widget.Gallery;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import cn.com.pcgroup.android.framework.http.client.AsynLoadImageUtils;
 import cn.com.pcgroup.android.framework.http.download.MultiDownLoaderListener;
@@ -61,6 +65,11 @@ public class MainFragment extends Fragment {
 	 * 设置Gridview每一个Item运行和暂停切换的标志
 	 */
 	static int[] isStartServices;
+	
+	/**
+	 * 切换书架单本模式和多本模式的变量
+	 */
+	private int flipGalleryAndGridView;
 	/**
 	 * 任务和监听器组合成的对象列表
 	 */
@@ -117,6 +126,10 @@ public class MainFragment extends Fragment {
 	 * 能够滑动的自定义LinearLayout
 	 */
 	private SlideView slideView;
+	
+	private LinearLayout gridLayout;
+	private GridView grid;
+	private Gallery gallery;
 
 	/*
 	 * 红勾按钮
@@ -168,11 +181,27 @@ public class MainFragment extends Fragment {
 		longTouchHeader = (ViewGroup) mainActivity
 				.findViewById(R.id.long_click_header);
 		slideView = (SlideView) mainActivity.findViewById(R.id.slideview);
-		GridView grid = (GridView) mainActivity.findViewById(R.id.grid);
-
-		setGridViewAdapter(grid);
-		setGridViewItemClick(grid);
-		setGridViewItemLongClick(grid);
+		gridLayout = (LinearLayout) mainActivity.findViewById(R.id.grid_layout);
+		grid = (GridView) mainActivity.findViewById(R.id.grid);
+		
+		FrameLayout.LayoutParams gridP = new FrameLayout.LayoutParams(
+				getGridViewImgWidth(),
+				(int) (getGridViewImgWidth() * 1.5));
+		setAdapterViewAdapter(grid, gridP);
+		setGridViewItemClick();
+//		setGridViewItemLongClick();
+		setAdapterViewItemLongClick(grid,false);
+		
+		gallery = (Gallery) mainActivity.findViewById(R.id.gallery);
+		FrameLayout.LayoutParams galleryP = new FrameLayout.LayoutParams(
+				getDisplayWidth() / 2,
+				(int) (getDisplayWidth() * 0.75));
+		setAdapterViewAdapter(gallery, galleryP).setMode(ImageAdapter.SINGLE_MODE);
+		setGalleryItemClick();
+//		setGalleryItemLongClick();
+		setAdapterViewItemLongClick(gallery,true);
+		
+		
 		set = (ImageView) mainActivity.findViewById(R.id.set);
 		set.setOnClickListener(listener);
 		redOK = (ImageView) mainActivity.findViewById(R.id.red_ok);
@@ -191,25 +220,29 @@ public class MainFragment extends Fragment {
 				.findViewById(R.id.is_downloading_num);
 	}
 
-	private void setGridViewAdapter(GridView grid) {
+	private ImageAdapter setAdapterViewAdapter(AdapterView<? super BaseAdapter> adapterView,FrameLayout.LayoutParams p) {
 		final ArrayList<BookShelf> datas = mainActivity.getMagDatas();
+		ImageAdapter adapter = null;
 		if (datas != null) {
 			int size = datas.size();
 			if (size != 0) {
 				isStartServices = new int[size];
 				getStatesFromPrefForMap(datas);
 				test(urlStates);
-				ImageAdapter adapter = new ImageAdapter(datas, urlStates,
-						mainActivity);
+				
+				adapter = new ImageAdapter(datas, urlStates,
+						mainActivity,p);
 				adapter.setTasksAndListeners(globalTaskAndListeners);
 				adapter.setIntent(startService);
 				adapter.setServiceConnection(conn);
 				// 初始化任务和监听器
 				initTasksAndListeners(datas, size);
-				grid.setAdapter(adapter);
+				adapterView.setAdapter(adapter);
 			}
 		}
+		return adapter;
 	}
+	
 
 	public static void test(HashMap<String, Integer> urlStates) {
 		Log.v("liuyouxue", "==========test for hashMap===============");
@@ -417,7 +450,7 @@ public class MainFragment extends Fragment {
 		}
 	}
 
-	private void setGridViewItemClick(GridView grid) {
+	private void setGridViewItemClick() {
 		grid.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
@@ -431,14 +464,76 @@ public class MainFragment extends Fragment {
 				if (showDelDialog(position)) {
 					return;
 				}
-				/**
-				 * 第一次点击某个任务时启动下载服务然后退出该方法
-				 */
-				startDownloadService(position);
-				// 以后该任务就在运行和暂停状态切换
-				flipStartAndPause(position);
+				performAdapterViewOnItemClick(position);
 			}
 		});
+	}
+	
+	private void setAdapterViewItemLongClick(AdapterView<? super BaseAdapter> adapterView,final boolean isGallery){
+		adapterView.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				performAdapterViewOnItemLongClick();
+				if(isGallery)
+					flipGalleryAndGridView();
+				return true;
+			}
+		});
+	}
+	
+//	private void setGridViewItemLongClick() {
+//		grid.setOnItemLongClickListener(new OnItemLongClickListener() {
+//			@Override
+//			public boolean onItemLongClick(AdapterView<?> parent, View view,
+//					int position, long id) {
+//				performAdapterViewOnItemLongClick();
+//				return true;
+//			}
+//		});
+//	}
+	
+	private void setGalleryItemClick(){
+		gallery.setOnItemClickListener(new OnItemClickListener() {
+
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				performAdapterViewOnItemClick(position);
+			}
+		});
+	}
+	
+//	private void setGalleryItemLongClick(){
+//		gallery.setOnItemLongClickListener(new OnItemLongClickListener() {
+//
+//			@Override
+//			public boolean onItemLongClick(AdapterView<?> parent, View view,
+//					int position, long id) {
+//				performAdapterViewOnItemLongClick();
+//				flipGalleryAndGridView();
+//				return true;
+//			}
+//		});
+//	}
+	
+	private void performAdapterViewOnItemLongClick(){
+		longTouchHeader.setVisibility(View.VISIBLE);
+		normalHeader.setVisibility(View.GONE);
+		// 显示可以删除杂志的选项，一般只有下载成功的，或者正在下载的才能删除杂志，没有开始下载的不能删除
+		iterateShowOrHideEachCanDelOption(View.VISIBLE);
+
+		setLongTouchHeaderState();
+	}
+	
+	private void performAdapterViewOnItemClick(int position){
+		/**
+		 * 第一次点击某个任务时启动下载服务然后退出该方法
+		 */
+		startDownloadService(position);
+		// 以后该任务就在运行和暂停状态切换
+		flipStartAndPause(position);
 	}
 	
 	public class MyDialogClickListener implements DialogInterface.OnClickListener{
@@ -622,21 +717,7 @@ public class MainFragment extends Fragment {
 		}
 	}
 
-	private void setGridViewItemLongClick(GridView grid) {
-		grid.setOnItemLongClickListener(new OnItemLongClickListener() {
-			@Override
-			public boolean onItemLongClick(AdapterView<?> parent, View view,
-					int position, long id) {
-				longTouchHeader.setVisibility(View.VISIBLE);
-				normalHeader.setVisibility(View.GONE);
-				// 显示可以删除杂志的选项，一般只有下载成功的，或者正在下载的才能删除杂志，没有开始下载的不能删除
-				iterateShowOrHideEachCanDelOption(View.VISIBLE);
-
-				setLongTouchHeaderState();
-				return true;
-			}
-		});
-	}
+	
 
 	/**
 	 * 显示或隐藏每个Item的可删除图标
@@ -797,10 +878,21 @@ public class MainFragment extends Fragment {
 					slideView.slideview(0, -deltaX - 15);
 				}
 			}else if(id == flipShelfAndSingleBtn.getId()){ /* 最右边切换按钮 */
-				
+				flipGalleryAndGridView();
 			}
 		}
 	};
+	
+	private void flipGalleryAndGridView(){
+		flipGalleryAndGridView ^= FLIP_MASK;
+		if(flipGalleryAndGridView == 1){ //显示单本模式
+			gridLayout.setVisibility(View.GONE);
+			gallery.setVisibility(View.VISIBLE);
+		}else{//显示多本模式
+			gridLayout.setVisibility(View.VISIBLE);
+			gallery.setVisibility(View.GONE);
+		}
+	}
 
 	public static int getGridViewImgWidth() {
 		return getDisplayWidth() / 3 - 3;
