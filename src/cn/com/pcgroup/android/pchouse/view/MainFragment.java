@@ -188,8 +188,8 @@ public class MainFragment extends Fragment {
 				getGridViewImgWidth(),
 				(int) (getGridViewImgWidth() * 1.5));
 		setAdapterViewAdapter(grid, gridP);
-		setGridViewItemClick();
-//		setGridViewItemLongClick();
+//		setGridViewItemClick();
+		setAdapterViewItemClickListener(grid, true);
 		setAdapterViewItemLongClick(grid,false);
 		
 		gallery = (Gallery) mainActivity.findViewById(R.id.gallery);
@@ -197,8 +197,8 @@ public class MainFragment extends Fragment {
 				getDisplayWidth() / 2,
 				(int) (getDisplayWidth() * 0.75));
 		setAdapterViewAdapter(gallery, galleryP).setMode(ImageAdapter.SINGLE_MODE);
-		setGalleryItemClick();
-//		setGalleryItemLongClick();
+//		setGalleryItemClick();
+		setAdapterViewItemClickListener(gallery, false);
 		setAdapterViewItemLongClick(gallery,true);
 		
 		
@@ -450,24 +450,6 @@ public class MainFragment extends Fragment {
 		}
 	}
 
-	private void setGridViewItemClick() {
-		grid.setOnItemClickListener(new OnItemClickListener() {
-
-			@Override
-			public void onItemClick(AdapterView<?> parent, View view,
-					int position, long id) {
-
-				/**
-				 * 如果出现删除按钮，显示Dialog后退出该方法
-				 */
-				;
-				if (showDelDialog(position)) {
-					return;
-				}
-				performAdapterViewOnItemClick(position);
-			}
-		});
-	}
 	
 	private void setAdapterViewItemLongClick(AdapterView<? super BaseAdapter> adapterView,final boolean isGallery){
 		adapterView.setOnItemLongClickListener(new OnItemLongClickListener() {
@@ -483,40 +465,24 @@ public class MainFragment extends Fragment {
 		});
 	}
 	
-//	private void setGridViewItemLongClick() {
-//		grid.setOnItemLongClickListener(new OnItemLongClickListener() {
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> parent, View view,
-//					int position, long id) {
-//				performAdapterViewOnItemLongClick();
-//				return true;
-//			}
-//		});
-//	}
-	
-	private void setGalleryItemClick(){
-		gallery.setOnItemClickListener(new OnItemClickListener() {
+	private void setAdapterViewItemClickListener(AdapterView<? super BaseAdapter> adapterView, final boolean isGridView){
+		adapterView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
+
+				/**
+				 * 如果出现删除按钮，显示Dialog后退出该方法
+				 */
+				if(isGridView)
+					if(showDelDialog(position))
+						return;
 				performAdapterViewOnItemClick(position);
 			}
 		});
 	}
 	
-//	private void setGalleryItemLongClick(){
-//		gallery.setOnItemLongClickListener(new OnItemLongClickListener() {
-//
-//			@Override
-//			public boolean onItemLongClick(AdapterView<?> parent, View view,
-//					int position, long id) {
-//				performAdapterViewOnItemLongClick();
-//				flipGalleryAndGridView();
-//				return true;
-//			}
-//		});
-//	}
 	
 	private void performAdapterViewOnItemLongClick(){
 		longTouchHeader.setVisibility(View.VISIBLE);
@@ -716,8 +682,6 @@ public class MainFragment extends Fragment {
 			urlRunningTasks.remove(task);
 		}
 	}
-
-	
 
 	/**
 	 * 显示或隐藏每个Item的可删除图标
