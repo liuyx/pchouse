@@ -40,6 +40,7 @@ import cn.com.pcgroup.android.framework.http.download.bean.DownloadTask;
 import cn.com.pcgroup.android.model.BookShelf;
 import cn.com.pcgroup.android.pchouse.page.MainCatalogActivity;
 import cn.com.pcgroup.android.pchouse.page.R;
+import cn.com.pcgroup.android.pchouse.view.ImageAdapter.ViewHolder;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.MultiDownListenerAndViews.DownloadTaskState;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.MultiDownListenerAndViews.SignTaskState;
 import cn.com.pcgroup.android.service.MultiDownloadService;
@@ -164,9 +165,6 @@ public class MainFragment extends Fragment {
 	 * 从SharePreference中获取以前下载的记录
 	 */
 	private void getStatisticsFromPref() {
-		// headerStateCount.staticsBytes =
-		// PreferencesUtils.getPreference(context,
-		// PREF_NAME, KEY_ALREADY_OCCUPY_SPACE_IN_BYTES, (long) 0);
 		headerStateCount.downloading = PreferencesUtils.getPreference(context,
 				PREF_NAME, KEY_IS_DOWNLOADING, 0);
 		headerStateCount.downloaded = PreferencesUtils.getPreference(context,
@@ -188,7 +186,6 @@ public class MainFragment extends Fragment {
 				getGridViewImgWidth(),
 				(int) (getGridViewImgWidth() * 1.5));
 		setAdapterViewAdapter(grid, gridP);
-//		setGridViewItemClick();
 		setAdapterViewItemClickListener(grid, true);
 		setAdapterViewItemLongClick(grid,false);
 		
@@ -197,7 +194,6 @@ public class MainFragment extends Fragment {
 				getDisplayWidth() / 2,
 				(int) (getDisplayWidth() * 0.75));
 		setAdapterViewAdapter(gallery, galleryP).setMode(ImageAdapter.SINGLE_MODE);
-//		setGalleryItemClick();
 		setAdapterViewItemClickListener(gallery, false);
 		setAdapterViewItemLongClick(gallery,true);
 		
@@ -269,7 +265,7 @@ public class MainFragment extends Fragment {
 		return null;
 	}
 
-	private DownloadingViews getTaskViews(int pos) {
+	private ViewHolder getTaskViews(int pos) {
 		final MultiDownListenerAndViews listAndViews = getListenerAndViews(pos);
 		if (listAndViews != null) {
 			return listAndViews.views;
@@ -278,14 +274,14 @@ public class MainFragment extends Fragment {
 	}
 
 	private ImageView getBaseImg(int pos) {
-		final DownloadingViews views = getTaskViews(pos);
+		final ViewHolder views = getTaskViews(pos);
 		if (views != null)
-			return views.baseImg;
+			return views.magazineImg;
 		return null;
 	}
 
 	private ImageView getDelImg(int pos) {
-		final DownloadingViews views = getTaskViews(pos);
+		final ViewHolder views = getTaskViews(pos);
 		if (views != null) {
 			return views.magazingDel;
 		}
@@ -293,7 +289,7 @@ public class MainFragment extends Fragment {
 	}
 
 	public ImageView getPauseImg(int pos) {
-		final DownloadingViews views = getTaskViews(pos);
+		final ViewHolder views = getTaskViews(pos);
 		if (views != null) {
 			return views.loadingPause;
 		}
@@ -301,14 +297,14 @@ public class MainFragment extends Fragment {
 	}
 	
 	public ImageView getDoneImg(int pos){
-		final DownloadingViews views = getTaskViews(pos);
+		final ViewHolder views = getTaskViews(pos);
 		if(views != null)
 			return views.loadingDone;
 		return null;
 	}
 
 	public ImageView getRunningImg(int pos) {
-		final DownloadingViews views = getTaskViews(pos);
+		final ViewHolder views = getTaskViews(pos);
 		if (views != null) {
 			return views.loadingProgress;
 		}
@@ -316,7 +312,7 @@ public class MainFragment extends Fragment {
 	}
 
 	public TextView getProgressTxt(int pos) {
-		final DownloadingViews views = getTaskViews(pos);
+		final ViewHolder views = getTaskViews(pos);
 		if (views != null) {
 			return views.progress;
 		}
@@ -740,6 +736,7 @@ public class MainFragment extends Fragment {
 		if(loadingDone != null)
 			loadingDone.setVisibility(View.GONE);
 	}
+	
 
 	/**
 	 * 长按Gridview设置标题view的显示状态
@@ -991,7 +988,7 @@ public class MainFragment extends Fragment {
 	 * 
 	 * @param views
 	 */
-	static void showPause(DownloadingViews views) {
+	static void showPause(ViewHolder views,int position) {
 		if (views != null) {
 			if (views.progress != null)
 				views.progress.setVisibility(View.GONE);
@@ -1022,7 +1019,7 @@ public class MainFragment extends Fragment {
 	 * @param byteNum
 	 * @param totalBytes
 	 */
-	static double showRunning(DownloadingViews views, long byteNum,
+	static double showRunning(ViewHolder views, long byteNum,
 			long totalBytes) {
 		if (views != null) {
 			double percent = (byteNum * 100.0 / totalBytes);
@@ -1058,7 +1055,7 @@ public class MainFragment extends Fragment {
 	 * 
 	 * @param views
 	 */
-	static void showDone(DownloadingViews views) {
+	static void showDone(ViewHolder views) {
 		if (views != null) {
 			if (views.progress != null) {
 				views.progress.setVisibility(View.GONE);
@@ -1091,33 +1088,16 @@ public class MainFragment extends Fragment {
 				MultiDownListenerAndViews listener) {
 			this.task = task;
 			this.listenerAndViews = listener;
+			
 		}
 	}
 
-	public static final class DownloadingViews {
-		private ImageView loadingDone;
-		private TextView progress;
-		private ImageView loadingProgress;
-		private ImageView loadingPause;
-		private ImageView magazingDel;
-		private ImageView baseImg; // 每个Item的大图片
-
-		public DownloadingViews(TextView progress, ImageView loadingProgress,
-				ImageView loadingPause, ImageView magazingDel, ImageView baseImg,ImageView loadingDone) {
-			this.progress = progress;
-			this.loadingProgress = loadingProgress;
-			this.loadingPause = loadingPause;
-			this.magazingDel = magazingDel;
-			this.baseImg = baseImg;
-			this.loadingDone = loadingDone;
-		}
-	}
 
 	public static final class MultiDownListenerAndViews extends
 			MultiDownLoaderListener {
 		private long totalBytes;
 		private HeaderStateCount stateCount;
-		private DownloadingViews views;
+		private ViewHolder views;
 		private String taskUrl;
 		private SignTaskState signState;
 		private int position;
@@ -1159,13 +1139,14 @@ public class MainFragment extends Fragment {
 				int position, String url) {
 			stateCount = headerStateCount;
 			taskUrl = url;
+			this.position = position;
 			if (signState != null) {
 				signState.signTaskState(position, taskUrl, state);
 			}
 		}
 
 
-		public void setDownloadingViews(DownloadingViews views) {
+		public void setDownloadingViews(ViewHolder views) {
 			this.views = views;
 		}
 		
@@ -1182,7 +1163,7 @@ public class MainFragment extends Fragment {
 			if (signState != null) {
 				signState.signTaskState(position, taskUrl, state);
 			}
-			showPause(views);
+			showPause(views,position);
 		}
 
 		@Override
@@ -1216,5 +1197,4 @@ public class MainFragment extends Fragment {
 			showDone(views);
 		}
 	}
-
 }

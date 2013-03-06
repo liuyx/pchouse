@@ -21,7 +21,6 @@ import cn.com.pcgroup.android.framework.http.download.bean.DownloadTask;
 import cn.com.pcgroup.android.model.BookShelf;
 import cn.com.pcgroup.android.pchouse.page.R;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.DownloadTaskAndListenerAndViews;
-import cn.com.pcgroup.android.pchouse.view.MainFragment.DownloadingViews;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.MultiDownListenerAndViews.DownloadTaskState;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.MyServiceConnection;
 import cn.com.pcgroup.common.android.utils.PreferencesUtils;
@@ -209,11 +208,11 @@ public class ImageAdapter extends BaseAdapter {
 			DownloadTaskAndListenerAndViews taskAndListener = tasksAndListeners
 					.get(position);
 			if (taskAndListener != null) {
-				DownloadingViews views = new DownloadingViews(
-						holder.progress, holder.loadingProgress,
-						holder.loadingPause, holder.magazingDel,holder.magazineImg,holder.loadingDone);
-				taskAndListener.listenerAndViews.setDownloadingViews(views);
-				setEachTaskShowState(position, views, taskUrl);
+//				DownloadingViews views = new DownloadingViews(
+//						holder.progress, holder.loadingProgress,
+//						holder.loadingPause, holder.magazingDel,holder.magazineImg,holder.loadingDone,position);
+				taskAndListener.listenerAndViews.setDownloadingViews(holder);
+				setEachTaskShowState(position, holder, taskUrl);
 			}
 		}
 	}
@@ -244,7 +243,7 @@ public class ImageAdapter extends BaseAdapter {
 	/**
 	 * 设置各个任务的显示状态
 	 */
-	private void setEachTaskShowState(int position, DownloadingViews views,
+	private void setEachTaskShowState(int position, ViewHolder views,
 			String taskUrl) {
 		/**
 		 * 遍历所有的任务状态
@@ -252,13 +251,13 @@ public class ImageAdapter extends BaseAdapter {
 		showStateForViews(position, views, taskUrl);
 	}
 
-	private void showStateForViews(int position, DownloadingViews views,
+	private void showStateForViews(int position, ViewHolder views,
 			String taskUrl) {
 		int state = getEachItemSavedState(position);
 		testState(position, state);
 		switch (state) {
 		case DownloadTaskState.PAUSE_STATE:
-			MainFragment.showPause(views);
+			MainFragment.showPause(views,position);
 			break;
 		case DownloadTaskState.RUNNING_STATE:
 			startShowProgress(position,taskUrl, views);
@@ -276,7 +275,7 @@ public class ImageAdapter extends BaseAdapter {
 	 * 
 	 * @param views
 	 */
-	private void startShowProgress(int pos,String taskUrl, DownloadingViews views) {
+	private void startShowProgress(int pos,String taskUrl, ViewHolder views) {
 		if (views != null) {
 			//获取上次下载进度
 			getLastTimeDownloadProgress(taskUrl);
