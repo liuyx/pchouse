@@ -26,9 +26,9 @@ public class ImageAdapter extends BaseAdapter {
 	// 此ImageAdapter为书架单本模式和多本模式进行适配,默认为多本模式适配
 	public static final int MANY_MODE = 0;
 	public static final int SINGLE_MODE = 1;
+	private static Activity mainActivity;
 	private ArrayList<BookShelf> magsData;
 	private ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners;
-	private static Activity mainActivity;
 	/**
 	 * 各个任务的状态
 	 */
@@ -37,7 +37,10 @@ public class ImageAdapter extends BaseAdapter {
 	private MyServiceConnection conn;
 	//大图的大小布局参数
 	private FrameLayout.LayoutParams p;
-
+	
+	/**
+	 * 作为GridView的Adapter时，其值为MANY_MODE,作为Gallery的Adapter时，其值为SINGLE_MODE
+	 */
 	private int mode = MANY_MODE;
 
 	public void setIntent(Intent startService) {
@@ -51,7 +54,6 @@ public class ImageAdapter extends BaseAdapter {
 	public void setTasksAndListeners(
 			ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners) {
 		this.tasksAndListeners = tasksAndListeners;
-		Log.v("wb", "list size = " + tasksAndListeners.size());
 	}
 
 	public ImageAdapter setMode(int mode) {
@@ -64,7 +66,6 @@ public class ImageAdapter extends BaseAdapter {
 			FrameLayout.LayoutParams p) {
 		this.magsData = magsData;
 		taskUrlStates = urlStates;
-
 		mainActivity = context;
 		this.p = p;
 	}
@@ -87,7 +88,7 @@ public class ImageAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		Log.v("wb", "刷新了一次");
+		Log.v("liuyouxue", "刷新了 " + position);
 		ViewHolder holder = new ViewHolder();
 		convertView = LayoutInflater.from(mainActivity).inflate(
 				R.layout.img_adapter, null);
@@ -200,7 +201,7 @@ public class ImageAdapter extends BaseAdapter {
 	 */
 	private void testState(int position, int state) {
 		switch (state) {
-		case MultiDownListenerAndViews.DownloadTaskState.BEGIN_STATE:
+		case MultiDownListenerAndViews.DownloadTaskState.UN_BEGIN_STATE:
 			Log.v("lyx", "pos = " + position + ", state = begin");
 			break;
 		case MultiDownListenerAndViews.DownloadTaskState.PAUSE_STATE:
@@ -240,6 +241,8 @@ public class ImageAdapter extends BaseAdapter {
 		case MultiDownListenerAndViews.DownloadTaskState.SUCCESS_STATE:
 			MainFragment.showDone(views);
 			break;
+		case MultiDownListenerAndViews.DownloadTaskState.SHOW_DEL_STATE:
+			MultiDownListenerAndViews.showCanDelState(views);
 		default:
 			break;
 		}
@@ -265,8 +268,8 @@ public class ImageAdapter extends BaseAdapter {
 			conn.setTask(task, pos,
 					MultiDownListenerAndViews.DownloadTaskState.RUNNING_STATE);
 			mainActivity.bindService(service, conn, Service.BIND_AUTO_CREATE);
-			// 将该位置的状态设置为运行状态
-			MainFragment.isStartServices[pos] ^= MainFragment.FLIP_MASK;
+//			// 将该位置的状态设置为运行状态
+//			MainFragment.isStartServices[pos] ^= MainFragment.FLIP_MASK;
 		}
 	}
 

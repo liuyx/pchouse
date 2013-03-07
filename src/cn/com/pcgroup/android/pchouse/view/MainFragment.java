@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -21,6 +22,7 @@ import android.os.Environment;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +36,6 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import cn.com.pcgroup.android.framework.http.client.AsynLoadImageUtils;
 import cn.com.pcgroup.android.framework.http.download.MultiDownLoaderListener;
 import cn.com.pcgroup.android.framework.http.download.bean.DownloadTask;
 import cn.com.pcgroup.android.model.BookShelf;
@@ -63,7 +64,7 @@ public class MainFragment extends Fragment {
 	private static Context context;
 	private final MyServiceConnection conn = new MyServiceConnection();
 	/**
-	 * 设置Gridview每一个Item运行和暂停切换的标志
+	 * 设置Gridview和Gallery每一个Item运行和暂停切换的标志
 	 */
 	static int[] isStartServices;
 
@@ -108,7 +109,6 @@ public class MainFragment extends Fragment {
 	 * 显示设置页面
 	 */
 	private int isShowSetPage;
-	
 
 	/**
 	 * 显示设置按钮头部
@@ -132,7 +132,7 @@ public class MainFragment extends Fragment {
 	private LinearLayout gridLayout;
 	private GridView grid;
 	private Gallery gallery;
-	
+
 	private ImageAdapter gridAdapter;
 	private ImageAdapter galleryAdapter;
 
@@ -185,28 +185,26 @@ public class MainFragment extends Fragment {
 		slideView = (SlideView) mainActivity.findViewById(R.id.slideview);
 		gridLayout = (LinearLayout) mainActivity.findViewById(R.id.grid_layout);
 		grid = (GridView) mainActivity.findViewById(R.id.grid);
-
 		FrameLayout.LayoutParams gridP = new FrameLayout.LayoutParams(
-				getGridViewImgWidth(),
-				(int) (getGridViewImgWidth() * 1.5));
+				getGridViewImgWidth(), (int) (getGridViewImgWidth() * 1.5));
 		gridAdapter = setAdapterViewAdapter(grid, gridP);
 		setAdapterViewItemClickListener(grid, true);
-		setAdapterViewItemLongClick(grid,false);
+		setAdapterViewItemLongClick(grid, false);
 
 		gallery = (Gallery) mainActivity.findViewById(R.id.gallery);
 		FrameLayout.LayoutParams galleryP = new FrameLayout.LayoutParams(
-				getDisplayWidth() / 2,
-				(int) (getDisplayWidth() * 0.75));
-		galleryAdapter = setAdapterViewAdapter(gallery, galleryP).setMode(ImageAdapter.SINGLE_MODE);
+				getDisplayWidth() / 2, (int) (getDisplayWidth() * 0.75));
+		galleryAdapter = setAdapterViewAdapter(gallery, galleryP).setMode(
+				ImageAdapter.SINGLE_MODE);
 		setAdapterViewItemClickListener(gallery, false);
-		setAdapterViewItemLongClick(gallery,true);
-		
+		setAdapterViewItemLongClick(gallery, true);
 
 		set = (ImageView) mainActivity.findViewById(R.id.set);
 		set.setOnClickListener(listener);
 		redOK = (ImageView) mainActivity.findViewById(R.id.red_ok);
 		redOK.setOnClickListener(listener);
-		flipShelfAndSingleBtn = (ImageView) mainActivity.findViewById(R.id.flip_shelf_and_single);
+		flipShelfAndSingleBtn = (ImageView) mainActivity
+				.findViewById(R.id.flip_shelf_and_single);
 		flipShelfAndSingleBtn.setOnClickListener(listener);
 
 		/**
@@ -219,14 +217,17 @@ public class MainFragment extends Fragment {
 		isDownloadingNum = (TextView) mainActivity
 				.findViewById(R.id.is_downloading_num);
 	}
-	
+
 	/**
 	 * 给GridView和Gallery设置Adapter，并且传入LayoutParams参数，该参数调整ImageAdapter中图片的大小
+	 * 
 	 * @param adapterView
 	 * @param p
 	 * @return 返回配置好的ImageAdapter
 	 */
-	private ImageAdapter setAdapterViewAdapter(AdapterView<? super BaseAdapter> adapterView,FrameLayout.LayoutParams p) {
+	private ImageAdapter setAdapterViewAdapter(
+			AdapterView<? super BaseAdapter> adapterView,
+			FrameLayout.LayoutParams p) {
 		final ArrayList<BookShelf> datas = mainActivity.getMagDatas();
 		ImageAdapter adapter = null;
 		if (datas != null) {
@@ -234,23 +235,20 @@ public class MainFragment extends Fragment {
 			if (size != 0) {
 				isStartServices = new int[size];
 				getStatesFromPrefForMap(datas);
-				test(urlStates);
-
-				adapter = new ImageAdapter(datas, urlStates,
-						mainActivity,p);
+				
+				// 初始化任务和监听器
+				// GridView和Gallery公用Adapter，会调用该方法两次，所以会导致重复添加任务和监听器，导致到时候统计数据不准，故第二次不应该再给容器添加监听器
+				if (globalTaskAndListeners.size() == 0)
+					initTasksAndListeners(datas, size);
+				adapter = new ImageAdapter(datas, urlStates, mainActivity, p);
 				adapter.setTasksAndListeners(globalTaskAndListeners);
 				adapter.setIntent(startService);
 				adapter.setServiceConnection(conn);
-				// 初始化任务和监听器
-				//GridView和Gallery公用Adapter，会调用该方法两次，所以会导致重复添加任务和监听器，导致到时候统计数据不准，故第二次不应该再给容器添加监听器
-				if(globalTaskAndListeners.size() == 0)
-					initTasksAndListeners(datas, size);
 				adapterView.setAdapter(adapter);
 			}
 		}
 		return adapter;
 	}
-
 
 	public static void test(HashMap<String, Integer> urlStates) {
 		Log.v("liuyouxue", "==========test for hashMap===============");
@@ -308,9 +306,9 @@ public class MainFragment extends Fragment {
 		return null;
 	}
 
-	public ImageView getDoneImg(int pos){
+	public ImageView getDoneImg(int pos) {
 		final ViewHolder views = getTaskViews(pos);
-		if(views != null)
+		if (views != null)
 			return views.loadingDone;
 		return null;
 	}
@@ -336,7 +334,7 @@ public class MainFragment extends Fragment {
 		if (taskUrl != null) {
 			return urlStates.get(taskUrl);
 		}
-		return DownloadTaskState.BEGIN_STATE;
+		return DownloadTaskState.UN_BEGIN_STATE;
 	}
 
 	private void setTaskState(int pos, int state) {
@@ -344,6 +342,9 @@ public class MainFragment extends Fragment {
 		if (listAndViews != null) {
 			listAndViews.state = state;
 			freshUrlStates(pos, state);
+			gridAdapter.notifyDataSetChanged();
+			galleryAdapter.notifyDataSetChanged();
+			test(urlStates);
 		}
 	}
 
@@ -423,7 +424,6 @@ public class MainFragment extends Fragment {
 						getFileName(fileUrl));
 				MultiDownListenerAndViews downListAndViews = new MultiDownListenerAndViews(
 						headerStateCount, pos, fileUrl);
-				
 
 				// 设置任务状态监听器
 				setTaskSignListener(downListAndViews);
@@ -459,40 +459,43 @@ public class MainFragment extends Fragment {
 		}
 	}
 
-
-	private void setAdapterViewItemLongClick(AdapterView<? super BaseAdapter> adapterView,final boolean isGallery){
+	private void setAdapterViewItemLongClick(
+			AdapterView<? super BaseAdapter> adapterView,
+			final boolean isGallery) {
 		adapterView.setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			@Override
 			public boolean onItemLongClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				performAdapterViewOnItemLongClick();
-				if(isGallery)
+				if (isGallery)
 					flipGalleryAndGridView();
 				return true;
 			}
 		});
 	}
 
-	private void setAdapterViewItemClickListener(AdapterView<? super BaseAdapter> adapterView, final boolean isGridView){
+	private void setAdapterViewItemClickListener(
+			AdapterView<? super BaseAdapter> adapterView,
+			final boolean isGridView) {
 		adapterView.setOnItemClickListener(new OnItemClickListener() {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
-				
+
 				/**
 				 * 如果出现删除按钮，显示Dialog后退出该方法
 				 */
-				if(isGridView)
-					if(showDelDialog(position))
+				if (isGridView)
+					if (showDelDialog(position))
 						return;
 				performAdapterViewOnItemClick(position);
 			}
 		});
 	}
 
-	private void performAdapterViewOnItemLongClick(){
+	private void performAdapterViewOnItemLongClick() {
 		longTouchHeader.setVisibility(View.VISIBLE);
 		normalHeader.setVisibility(View.GONE);
 		// 显示可以删除杂志的选项，一般只有下载成功的，或者正在下载的才能删除杂志，没有开始下载的不能删除
@@ -501,7 +504,7 @@ public class MainFragment extends Fragment {
 		setLongTouchHeaderState();
 	}
 
-	private void performAdapterViewOnItemClick(int position){
+	private void performAdapterViewOnItemClick(int position) {
 		/**
 		 * 第一次点击某个任务时启动下载服务然后退出该方法
 		 */
@@ -510,9 +513,11 @@ public class MainFragment extends Fragment {
 		flipStartAndPause(position);
 	}
 
-	public class MyDialogClickListener implements DialogInterface.OnClickListener{
+	public class MyDialogClickListener implements
+			DialogInterface.OnClickListener {
 		private int pos;
-		public DialogInterface.OnClickListener setPos(int pos){
+
+		public DialogInterface.OnClickListener setPos(int pos) {
 			this.pos = pos;
 			return this;
 		}
@@ -528,7 +533,7 @@ public class MainFragment extends Fragment {
 	private boolean showDelDialog(final int pos) {
 		ImageView delImg = getDelImg(pos);
 		if (delImg != null && delImg.getVisibility() == View.VISIBLE) {
-			if(builder == null){
+			if (builder == null) {
 				builder = new Builder(mainActivity);
 				builder.setMessage("确认删除").setTitle("删除杂志");
 
@@ -540,7 +545,7 @@ public class MainFragment extends Fragment {
 					}
 				});
 
-				if(dialogClickListener == null){
+				if (dialogClickListener == null) {
 					dialogClickListener = new MyDialogClickListener();
 				}
 			}
@@ -613,14 +618,17 @@ public class MainFragment extends Fragment {
 				if (isStartServices != null
 						&& isStartServices.length > position) {
 					isStartServices[position] ^= FLIP_MASK;
+					Log.v("liy", "isStartService = " + isStartServices[position]);
 					/**
 					 * 启动下载服务
 					 */
 					if (isStartServices[position] == START_DOWNLOAD_SERVICE) {
-						MultiDownListenerAndViews.showBetweenStartAndPause(getTaskViews(position));
+						MultiDownListenerAndViews
+								.showBetweenStartAndPause(getTaskViews(position));
 						startDownloadTask(position);
 					} else {// 暂停下载任务
-						MultiDownListenerAndViews.showPause(getTaskViews(position), position);
+						MultiDownListenerAndViews.showPause(
+								getTaskViews(position), position);
 						pauseTask(task);
 					}
 				}
@@ -663,7 +671,6 @@ public class MainFragment extends Fragment {
 			if (size > position) {
 				if (task != null) {
 					if (downService != null) {
-						loadDownloadedImg(position);
 						downService
 								.addTask(task, getListenerAndViews(position));
 						// 将任务与url绑定添加到map中
@@ -674,16 +681,6 @@ public class MainFragment extends Fragment {
 		}
 	}
 
-	private void loadDownloadedImg(int position) {
-		ImageView baseImg = getBaseImg(position);
-		String taskUrl = getTaskUrl(position);
-		if (baseImg != null && taskUrl != null) {
-			baseImg.setTag(taskUrl);
-			AsynLoadImageUtils.getInstance().loadAndFillImg(
-					mainActivity.getApplicationContext(), baseImg, taskUrl,
-					false);
-		}
-	}
 
 	private void pauseTask(DownloadTask task) {
 		final MultiDownloadService downService = downloadService;
@@ -696,13 +693,14 @@ public class MainFragment extends Fragment {
 	/**
 	 * 显示或隐藏每个Item的可删除图标
 	 * 
-	 * @param visibilty ,是否显示可删除图标,View.VISIBLE为显示，View.GONE为隐藏
+	 * @param visibilty
+	 *            ,是否显示可删除图标,View.VISIBLE为显示，View.GONE为隐藏
 	 */
 	private void iterateShowOrHideEachCanDelOption(int visibilty) {
 		int len = globalTaskAndListeners.size();
 		for (int pos = 0; pos < len; pos++) {
 			Integer state = getTaskState(pos);
-			if (state != DownloadTaskState.BEGIN_STATE) {
+			if (state != DownloadTaskState.UN_BEGIN_STATE) {
 				final ImageView delImg = getDelImg(pos);
 				if (delImg != null) {
 
@@ -710,14 +708,29 @@ public class MainFragment extends Fragment {
 					if (visibilty == View.GONE
 							&& state == DownloadTaskState.DEL_STATE) {
 						hideAllTagViews(pos);
-					}else if(state != DownloadTaskState.DEL_STATE){
+					} else if (state != DownloadTaskState.DEL_STATE) {
 						delImg.setVisibility(visibilty);
 					}
-					setTaskState(pos, state);
+					
+					if (visibilty == View.VISIBLE) {
+						//将原先的状态保存下来,以便一会儿从SHOW_DEL_STATE这个暂存态恢复
+						taskStates.put(pos, state);
+						setTaskState(pos, DownloadTaskState.SHOW_DEL_STATE);
+					}else{
+						Integer readState = taskStates.get(pos);
+						if (readState != null) {
+							setTaskState(pos, readState);
+						}else{
+							setTaskState(pos, state);
+						}
+					}
 				}
 			}
 		}
 	}
+	
+	@SuppressLint("UseSparseArrays")
+	private SparseArray<Integer> taskStates = new SparseArray<Integer>();
 
 	/**
 	 * 隐藏右上角所有的标签views
@@ -747,10 +760,9 @@ public class MainFragment extends Fragment {
 		}
 
 		ImageView loadingDone = getDoneImg(pos);
-		if(loadingDone != null)
+		if (loadingDone != null)
 			loadingDone.setVisibility(View.GONE);
 	}
-
 
 	/**
 	 * 长按Gridview设置标题view的显示状态
@@ -785,7 +797,8 @@ public class MainFragment extends Fragment {
 		}
 		headerStateCount.downloaded = hasDownloaded;
 		headerStateCount.downloading = isDownloading;
-		headerStateCount.occupy = occupy > headerStateCount.occupy ? occupy : headerStateCount.occupy;
+		headerStateCount.occupy = occupy > headerStateCount.occupy ? occupy
+				: headerStateCount.occupy;
 		Log.v("liuyx", "altogether occupy = " + occupy);
 	}
 
@@ -798,12 +811,12 @@ public class MainFragment extends Fragment {
 		int state = getTaskState(pos);
 		DownloadTask task = getTask(pos);
 
-		//清空监听器的占用空间数据
+		// 清空监听器的占用空间数据
 		MultiDownListenerAndViews listAndViews = getListenerAndViews(pos);
-		if(listAndViews != null)
+		if (listAndViews != null)
 			listAndViews.clearOccupyData();
 
-		//更新头部数据
+		// 更新头部数据
 		if (state == DownloadTaskState.PAUSE_STATE) {
 			headerStateCount.downloading--;
 			if (task != null) {
@@ -829,7 +842,7 @@ public class MainFragment extends Fragment {
 	private void flushHeaderData() {
 		hasDownloadedNum.setText(headerStateCount.downloaded + "本");
 		hasOccupySpace.setText(headerStateCount.occupy + "MB");
-		isDownloadingNum.setText(headerStateCount.downloading + "本"); 
+		isDownloadingNum.setText(headerStateCount.downloading + "本");
 	}
 
 	private final View.OnClickListener listener = new View.OnClickListener() {
@@ -837,27 +850,27 @@ public class MainFragment extends Fragment {
 		@Override
 		public void onClick(View v) {
 			int id = v.getId();
-			//红勾按钮
+			// 红勾按钮
 			if (id == redOK.getId()) {
 				longTouchHeader.setVisibility(View.GONE);
 				normalHeader.setVisibility(View.VISIBLE);
 				iterateShowOrHideEachCanDelOption(View.GONE);
 			} else if (id == set.getId()) { /* 最左边设置按钮 */
 				flipSlideRightAndBack();
-			}else if(id == flipShelfAndSingleBtn.getId()){ /* 最右边切换按钮 */
+			} else if (id == flipShelfAndSingleBtn.getId()) { /* 最右边切换按钮 */
 				flipGalleryAndGridView();
 			}
 		}
 	};
-	
+
 	/**
 	 * 在向右滑动和滑回原位间切换
 	 */
-	private void flipSlideRightAndBack(){
+	private void flipSlideRightAndBack() {
 		isShowSetPage ^= FLIP_MASK;
-		int deltaX = mainActivity.getWindowManager()
-				.getDefaultDisplay().getWidth() * 5 / 6;
-		if (isShowSetPage == SHOW_SET_PAGE) { //显示设置页面时向右滑动
+		int deltaX = mainActivity.getWindowManager().getDefaultDisplay()
+				.getWidth() * 5 / 6;
+		if (isShowSetPage == SHOW_SET_PAGE) { // 显示设置页面时向右滑动
 			slideView.slideview(0, deltaX + 15);
 		} else {
 			// 滑回原位
@@ -865,17 +878,16 @@ public class MainFragment extends Fragment {
 		}
 	}
 
-	private void flipGalleryAndGridView(){
+	private void flipGalleryAndGridView() {
 		flipGalleryAndGridView ^= FLIP_MASK;
-		if(flipGalleryAndGridView == 1){ //显示单本模式
+		if (flipGalleryAndGridView == 1) { // 显示单本模式
 			gridLayout.setVisibility(View.GONE);
 			gallery.setVisibility(View.VISIBLE);
-			//刷新界面
 			galleryAdapter.notifyDataSetChanged();
-		}else{//显示多本模式
+		} else {// 显示多本模式
 			gridLayout.setVisibility(View.VISIBLE);
 			gallery.setVisibility(View.GONE);
-			//刷新界面
+			// 刷新界面
 			gridAdapter.notifyDataSetChanged();
 		}
 	}
@@ -1033,7 +1045,7 @@ public class MainFragment extends Fragment {
 			if (views.magazingDel != null)
 				views.magazingDel.setVisibility(View.GONE);
 
-			if(views.loadingDone != null)
+			if (views.loadingDone != null)
 				views.loadingDone.setVisibility(View.VISIBLE);
 		}
 	}
