@@ -41,8 +41,8 @@ import cn.com.pcgroup.android.model.BookShelf;
 import cn.com.pcgroup.android.pchouse.page.MainCatalogActivity;
 import cn.com.pcgroup.android.pchouse.page.R;
 import cn.com.pcgroup.android.pchouse.view.ImageAdapter.ViewHolder;
-import cn.com.pcgroup.android.pchouse.view.MainFragment.MultiDownListenerAndViews.DownloadTaskState;
-import cn.com.pcgroup.android.pchouse.view.MainFragment.MultiDownListenerAndViews.SignTaskState;
+import cn.com.pcgroup.android.pchouse.view.MultiDownListenerAndViews.DownloadTaskState;
+import cn.com.pcgroup.android.pchouse.view.MultiDownListenerAndViews.SignTaskState;
 import cn.com.pcgroup.android.service.MultiDownloadService;
 import cn.com.pcgroup.android.service.MultiDownloadService.MyBinder;
 import cn.com.pcgroup.common.android.utils.PreferencesUtils;
@@ -85,7 +85,7 @@ public class MainFragment extends Fragment {
 	private HashMap<String, Integer> urlStates = new HashMap<String, Integer>();
 	private HeaderStateCount headerStateCount = new HeaderStateCount();
 
-	private static final class HeaderStateCount {
+	static final class HeaderStateCount {
 		private int downloaded; // 已经下载的杂志数量
 		private long occupy; // 所占空间的大小
 		private int downloading; // 正在下载的杂志数量
@@ -108,6 +108,8 @@ public class MainFragment extends Fragment {
 	 * 显示设置页面
 	 */
 	private int isShowSetPage;
+	
+	private int clickPosition = -1; //OnItemClick点击的位置
 
 	/**
 	 * 显示设置按钮头部
@@ -145,6 +147,7 @@ public class MainFragment extends Fragment {
 	 */
 	private ImageView set;
 	private AlertDialog.Builder builder;
+	private ImageAdapter adapter;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -185,7 +188,7 @@ public class MainFragment extends Fragment {
 		FrameLayout.LayoutParams gridP = new FrameLayout.LayoutParams(
 				getGridViewImgWidth(),
 				(int) (getGridViewImgWidth() * 1.5));
-		setAdapterViewAdapter(grid, gridP);
+		adapter = setAdapterViewAdapter(grid, gridP);
 		setAdapterViewItemClickListener(grid, true);
 		setAdapterViewItemLongClick(grid,false);
 
@@ -218,7 +221,6 @@ public class MainFragment extends Fragment {
 
 	private ImageAdapter setAdapterViewAdapter(AdapterView<? super BaseAdapter> adapterView,FrameLayout.LayoutParams p) {
 		final ArrayList<BookShelf> datas = mainActivity.getMagDatas();
-		ImageAdapter adapter = null;
 		if (datas != null) {
 			int size = datas.size();
 			if (size != 0) {
@@ -227,7 +229,7 @@ public class MainFragment extends Fragment {
 				test(urlStates);
 
 				adapter = new ImageAdapter(datas, urlStates,
-						mainActivity,p);
+						mainActivity,p,this);
 				adapter.setTasksAndListeners(globalTaskAndListeners);
 				adapter.setIntent(startService);
 				adapter.setServiceConnection(conn);
@@ -410,7 +412,8 @@ public class MainFragment extends Fragment {
 				File file = new File(fileDir.getAbsolutePath(),
 						getFileName(fileUrl));
 				MultiDownListenerAndViews downListAndViews = new MultiDownListenerAndViews(
-						headerStateCount, pos, fileUrl);
+						headerStateCount, pos, fileUrl,this);
+				
 
 				// 设置任务状态监听器
 				setTaskSignListener(downListAndViews);
@@ -467,6 +470,8 @@ public class MainFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
+				
+				clickPosition = position;
 
 				/**
 				 * 如果出现删除按钮，显示Dialog后退出该方法
@@ -477,6 +482,14 @@ public class MainFragment extends Fragment {
 				performAdapterViewOnItemClick(position);
 			}
 		});
+	}
+	
+	/**
+	 * 获取点击的位置
+	 * @return
+	 */
+	int getClickPos(){
+		return clickPosition;
 	}
 
 
@@ -984,73 +997,6 @@ public class MainFragment extends Fragment {
 	}
 
 	/**
-	 * 让view显示暂停状态
-	 * 
-	 * @param views
-	 */
-	static void showPause(ViewHolder views,int position) {
-		if (views != null) {
-			if (views.progress != null)
-				views.progress.setVisibility(View.GONE);
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.GONE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.stop();
-				}
-			}
-
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.VISIBLE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if(views.loadingDone != null)
-				views.loadingDone.setVisibility(View.GONE);
-		}
-	}
-
-	/**
-	 * 正在下载时显示views的状态
-	 * 
-	 * @param views
-	 * @param byteNum
-	 * @param totalBytes
-	 */
-	static double showRunning(ViewHolder views, long byteNum,
-			long totalBytes) {
-		if (views != null) {
-			double percent = (byteNum * 100.0 / totalBytes);
-			double finPercent = ((int) (percent * 100 + 0.5)) * 1.0 / 100.0;
-			Log.v("liuyx", "percent = " + finPercent + "%");
-			if (views.progress != null) {
-				views.progress.setVisibility(View.VISIBLE);
-				views.progress.setText(finPercent + "%");
-			}
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.VISIBLE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.start();
-				}
-			}
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if(views.loadingDone != null)
-				views.loadingDone.setVisibility(View.GONE);
-			return finPercent;
-		}
-		return 0.0;
-	}
-
-	/**
 	 * 下载完成时显示views的状态
 	 * 
 	 * @param views
@@ -1088,113 +1034,7 @@ public class MainFragment extends Fragment {
 				MultiDownListenerAndViews listener) {
 			this.task = task;
 			this.listenerAndViews = listener;
-
 		}
 	}
 
-
-	public static final class MultiDownListenerAndViews extends
-			MultiDownLoaderListener {
-		private long totalBytes;
-		private HeaderStateCount stateCount;
-		private ViewHolder views;
-		private String taskUrl;
-		private SignTaskState signState;
-		private int position;
-		private int occupy;
-		private int state = DownloadTaskState.BEGIN_STATE;
-
-		public static final class DownloadTaskState {
-			public static final int BEGIN_STATE = 0;
-			public static final int RUNNING_STATE = 1;
-			public static final int SUCCESS_STATE = 2;
-			public static final int PAUSE_STATE = 3;
-			public static final int DEL_STATE = 4;
-		}
-
-		public static interface SignTaskState {
-			/**
-			 * 将下载任务的url及其下载状态绑定
-			 * 
-			 * @param url
-			 * @param state
-			 */
-			public void signTaskState(int position, String url, int state);
-		}
-
-		/**
-		 * 监听下载任务的状态，将任务的url与具体的状态绑定
-		 * 
-		 * @param state
-		 */
-		public void setOnSignTaskState(SignTaskState state) {
-			signState = state;
-		}
-
-		public void setState(int state){
-			this.state = state;
-		}
-
-		public MultiDownListenerAndViews(HeaderStateCount headerStateCount,
-				int position, String url) {
-			stateCount = headerStateCount;
-			taskUrl = url;
-			this.position = position;
-			if (signState != null) {
-				signState.signTaskState(position, taskUrl, state);
-			}
-		}
-
-
-		public void setDownloadingViews(ViewHolder views) {
-			this.views = views;
-		}
-
-		/**
-		 * 删除杂志时，需清空该监听器的占用空间
-		 */
-		public void clearOccupyData(){
-			occupy = 0;
-		}
-
-		@Override
-		public void onPause() {
-			state = DownloadTaskState.PAUSE_STATE;
-			if (signState != null) {
-				signState.signTaskState(position, taskUrl, state);
-			}
-			showPause(views,position);
-		}
-
-		@Override
-		public void onBegin(long totalBytes) {
-			this.totalBytes = totalBytes;
-		}
-
-		@Override
-		public void onRunning(long byteNum) {
-			state = DownloadTaskState.RUNNING_STATE;
-			if (signState != null) {
-				signState.signTaskState(position, taskUrl, state);
-			}
-
-			showRunning(views, byteNum, totalBytes);
-			/*
-			 * 统计下载的总MB数
-			 */
-			if (stateCount != null) {
-				occupy = (int) (byteNum / (1024 * 1024) + 0.5);
-				Log.v("liuyx", "occupy = " + occupy);
-			}
-		}
-
-		@Override
-		public void onSuccessed() {
-			state = DownloadTaskState.SUCCESS_STATE;
-			if (signState != null) {
-				signState.signTaskState(position, taskUrl, state);
-			}
-			showDone(views);
-		}
-	}
 }
