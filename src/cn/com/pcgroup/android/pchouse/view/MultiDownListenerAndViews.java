@@ -1,6 +1,8 @@
 package cn.com.pcgroup.android.pchouse.view;
 
+import android.graphics.drawable.AnimationDrawable;
 import android.util.Log;
+import android.view.View;
 import cn.com.pcgroup.android.framework.http.download.MultiDownLoaderListener;
 import cn.com.pcgroup.android.pchouse.view.ImageAdapter.ViewHolder;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.HeaderStateCount;
@@ -14,7 +16,6 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener{
 	private HeaderStateCount stateCount;
 	private SignTaskState signState;
 	private int position;
-	private MainFragment mainFragment;
 
 	public static final class DownloadTaskState {
 		public static final int BEGIN_STATE = 0;
@@ -48,11 +49,10 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener{
 	}
 	
 	public MultiDownListenerAndViews(HeaderStateCount headerStateCount,
-			int position, String url,MainFragment mainFragment) {
+			int position, String url) {
 		stateCount = headerStateCount;
 		taskUrl = url;
 		this.position = position;
-		this.mainFragment = mainFragment;
 		if (signState != null) {
 			signState.signTaskState(position, taskUrl, state);
 		}
@@ -77,7 +77,7 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener{
 			signState.signTaskState(position, taskUrl, state);
 		}
 		
-		ImageAdapter.showPause(mainFragment,views, position);
+		showPause(views, position);
 	}
 
 	@Override
@@ -92,7 +92,7 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener{
 			signState.signTaskState(position, taskUrl, state);
 		}
 
-		ImageAdapter.showRunning(mainFragment,views, position,byteNum, totalBytes);
+		showRunning(views, position,byteNum, totalBytes);
 		/*
 		 * 统计下载的总MB数
 		 */
@@ -108,6 +108,136 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener{
 		if (signState != null) {
 			signState.signTaskState(position, taskUrl, state);
 		}
-		ImageAdapter.showDone(views);
+		showDone(views);
+	}
+	
+	/**
+	 * 正在下载时显示views的状态
+	 * 
+	 * @param views
+	 * @param byteNum
+	 * @param totalBytes
+	 */
+	static void showRunning(ViewHolder views,
+			int pos, long byteNum, long totalBytes) {
+		if (views != null) {
+			double percent = (byteNum * 100.0 / totalBytes);
+			double finPercent = ((int) (percent * 100 + 0.5)) * 1.0 / 100.0;
+			Log.v("liuyx", "percent = " + finPercent + "%");
+			if (views.progress != null) {
+				views.progress.setVisibility(View.VISIBLE);
+				views.progress.setText(finPercent + "%");
+			}
+			if (views.loadingProgress != null) {
+				views.loadingProgress.setVisibility(View.VISIBLE);
+				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
+						.getBackground();
+				if (anim != null) {
+					anim.start();
+				}
+			}
+			if (views.loadingPause != null)
+				views.loadingPause.setVisibility(View.GONE);
+
+			if (views.magazingDel != null)
+				views.magazingDel.setVisibility(View.GONE);
+
+			if (views.loadingDone != null)
+				views.loadingDone.setVisibility(View.GONE);
+			
+			if(views.betwenStartAndPauseImg != null)
+				views.betwenStartAndPauseImg.setVisibility(View.GONE);
+		}
+	}
+	
+	/**
+	 * 下载完成时显示views的状态
+	 * 
+	 * @param views
+	 */
+	static void showDone(ViewHolder views) {
+		if (views != null) {
+			if (views.progress != null) {
+				views.progress.setVisibility(View.GONE);
+			}
+			if (views.loadingProgress != null) {
+				views.loadingProgress.setVisibility(View.GONE);
+				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
+						.getBackground();
+				if (anim != null) {
+					anim.stop();
+				}
+			}
+
+			if (views.loadingPause != null)
+				views.loadingPause.setVisibility(View.GONE);
+
+			if (views.magazingDel != null)
+				views.magazingDel.setVisibility(View.GONE);
+
+			if (views.loadingDone != null)
+				views.loadingDone.setVisibility(View.VISIBLE);
+			
+			if(views.betwenStartAndPauseImg != null)
+				views.betwenStartAndPauseImg.setVisibility(View.GONE);
+		}
+	}
+	
+	/**
+	 * 让view显示暂停状态
+	 * 
+	 * @param views
+	 */
+	static void showPause(ViewHolder views,
+			int position) {
+		if (views != null) {
+			if (views.progress != null)
+				views.progress.setVisibility(View.GONE);
+			if (views.loadingProgress != null) {
+				views.loadingProgress.setVisibility(View.GONE);
+				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
+						.getBackground();
+				if (anim != null) {
+					anim.stop();
+				}
+			}
+
+			if (views.loadingPause != null)
+				views.loadingPause.setVisibility(View.VISIBLE);
+			if (views.magazingDel != null)
+				views.magazingDel.setVisibility(View.GONE);
+
+			if (views.loadingDone != null)
+				views.loadingDone.setVisibility(View.GONE);
+			
+			if(views.betwenStartAndPauseImg != null)
+				views.betwenStartAndPauseImg.setVisibility(View.GONE);
+		}
+	}
+	
+	static void showBetweenStartAndPause(ViewHolder views){
+		if(views != null){
+			if (views.progress != null)
+				views.progress.setVisibility(View.GONE);
+			if (views.loadingProgress != null) {
+				views.loadingProgress.setVisibility(View.GONE);
+				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
+						.getBackground();
+				if (anim != null) {
+					anim.stop();
+				}
+			}
+
+			if (views.loadingPause != null)
+				views.loadingPause.setVisibility(View.GONE);
+			if (views.magazingDel != null)
+				views.magazingDel.setVisibility(View.GONE);
+
+			if (views.loadingDone != null)
+				views.loadingDone.setVisibility(View.GONE);
+			
+			if(views.betwenStartAndPauseImg != null)
+				views.betwenStartAndPauseImg.setVisibility(View.VISIBLE);
+		}
 	}
 }

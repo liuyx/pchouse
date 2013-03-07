@@ -32,6 +32,14 @@
             android:src="@drawable/catalog_magazing_download_pause"
             android:visibility="gone" />
         
+        <ImageView 
+            android:id="@+id/img_right_top_between_start_and_pause"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|right"
+            android:src="@drawable/between_pause_and_start"
+            android:visibility="gone"/>
+        
          <ImageView
             android:id="@+id/img_right_top_done"
             android:layout_width="wrap_content"

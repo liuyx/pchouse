@@ -6,9 +6,7 @@ import java.util.HashMap;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
-import android.graphics.drawable.AnimationDrawable;
 import android.util.Log;
-import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +21,6 @@ import cn.com.pcgroup.android.model.BookShelf;
 import cn.com.pcgroup.android.pchouse.page.R;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.DownloadTaskAndListenerAndViews;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.MyServiceConnection;
-import cn.com.pcgroup.common.android.utils.PreferencesUtils;
 
 public class ImageAdapter extends BaseAdapter {
 	// 此ImageAdapter为书架单本模式和多本模式进行适配,默认为多本模式适配
@@ -36,11 +33,10 @@ public class ImageAdapter extends BaseAdapter {
 	 * 各个任务的状态
 	 */
 	private final HashMap<String, Integer> taskUrlStates;
-	private final SparseIntArray eachItemState = new SparseIntArray();
 	private Intent startService;
 	private MyServiceConnection conn;
+	//大图的大小布局参数
 	private FrameLayout.LayoutParams p;
-	private MainFragment mainFragment;
 
 	private int mode = MANY_MODE;
 
@@ -55,41 +51,24 @@ public class ImageAdapter extends BaseAdapter {
 	public void setTasksAndListeners(
 			ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners) {
 		this.tasksAndListeners = tasksAndListeners;
+		Log.v("wb", "list size = " + tasksAndListeners.size());
 	}
 
-	public void setMode(int mode) {
+	public ImageAdapter setMode(int mode) {
 		this.mode = mode;
+		return this;
 	}
 
 	public ImageAdapter(ArrayList<BookShelf> magsData,
 			HashMap<String, Integer> urlStates, Activity context,
-			FrameLayout.LayoutParams p, MainFragment mainFragment) {
+			FrameLayout.LayoutParams p) {
 		this.magsData = magsData;
 		taskUrlStates = urlStates;
 
 		mainActivity = context;
-		this.mainFragment = mainFragment;
 		this.p = p;
-		fillEachItemState();
 	}
 
-	/**
-	 * 将每个url的状态写到eachItemState容器中
-	 */
-	private void fillEachItemState() {
-		int len = magsData.size();
-		for (int i = 0; i < len; i++) {
-			BookShelf bookShelf = magsData.get(i);
-			if (bookShelf != null) {
-				String url = bookShelf.getUrl();
-				if (url != null) {
-					Integer state = taskUrlStates.get(url);
-					state = state == null ? 0 : state;
-					eachItemState.put(i, state);
-				}
-			}
-		}
-	}
 
 	@Override
 	public int getCount() {
@@ -108,10 +87,10 @@ public class ImageAdapter extends BaseAdapter {
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
+		Log.v("wb", "刷新了一次");
 		ViewHolder holder = new ViewHolder();
 		convertView = LayoutInflater.from(mainActivity).inflate(
 				R.layout.img_adapter, null);
-		holder.imgLayout = (FrameLayout) convertView.findViewById(R.id.mag_img);
 		holder.magazineImg = (ImageView) convertView.findViewById(R.id.image);
 		if (p != null) {
 			holder.magazineImg.setLayoutParams(p);
@@ -124,6 +103,7 @@ public class ImageAdapter extends BaseAdapter {
 				.findViewById(R.id.img_right_top_is_downloading);
 		holder.loadingPause = (ImageView) convertView
 				.findViewById(R.id.img_right_top_pause);
+		holder.betwenStartAndPauseImg = (ImageView) convertView.findViewById(R.id.img_right_top_between_start_and_pause);
 		holder.magazingDel = (ImageView) convertView
 				.findViewById(R.id.img_right_top_delete);
 		holder.loadingDone = (ImageView) convertView
@@ -153,10 +133,9 @@ public class ImageAdapter extends BaseAdapter {
 		ImageView loadingPause; // 暂停下载图标
 		ImageView magazingDel; // 删除杂志图标
 		ImageView loadingDone; // 加载完成图标
+		ImageView betwenStartAndPauseImg; //开始和暂停之间的
 		ProgressBar progsBar;
 		TextView summary; // 简介,用于单本模式下的内容介绍
-		FrameLayout imgLayout;
-
 	}
 
 	private String loadEachItem(int position, ViewHolder holder) {
@@ -188,7 +167,14 @@ public class ImageAdapter extends BaseAdapter {
 	}
 
 	private int getEachItemSavedState(int pos) {
-		return eachItemState.get(pos);
+		BookShelf bookShelf = magsData.get(pos);
+		if(bookShelf != null){
+			String taskUrl = bookShelf.getUrl();
+			if(taskUrl != null){
+				return taskUrlStates.get(taskUrl);
+			}
+		}
+		return 0;
 	}
 
 	private void showEachItemState(int position, ViewHolder holder,
@@ -242,13 +228,11 @@ public class ImageAdapter extends BaseAdapter {
 
 	private void showStateForViews(int position, ViewHolder views,
 			String taskUrl) {
-		if (position != mainFragment.getClickPos())
-			return;
 		int state = getEachItemSavedState(position);
 		testState(position, state);
 		switch (state) {
 		case MultiDownListenerAndViews.DownloadTaskState.PAUSE_STATE:
-			showPause(mainFragment, views, position);
+			MultiDownListenerAndViews.showPause(views, position);
 			break;
 		case MultiDownListenerAndViews.DownloadTaskState.RUNNING_STATE:
 			startShowProgress(position, taskUrl, views);
@@ -268,23 +252,11 @@ public class ImageAdapter extends BaseAdapter {
 	 */
 	private void startShowProgress(int pos, String taskUrl, ViewHolder views) {
 		if (views != null) {
-			// 获取上次下载进度
-			getLastTimeDownloadProgress(taskUrl);
+			
+			MultiDownListenerAndViews.showBetweenStartAndPause(views);
 			// 启动下载服务
 			startDownloadService(pos, tasksAndListeners.get(pos).task);
-
-			showRunning(mainFragment, views, pos, byteNums, totalBytes);
 		}
-	}
-
-	private long byteNums;
-	private long totalBytes;
-
-	private void getLastTimeDownloadProgress(String taskUrl) {
-		byteNums = PreferencesUtils.getPreference(mainActivity,
-				MainFragment.PREF_NAME, taskUrl + "byteNums", 0);
-		totalBytes = PreferencesUtils.getPreference(mainActivity,
-				MainFragment.PREF_NAME, taskUrl + "totalBytes", 0);
 	}
 
 	private void startDownloadService(int pos, DownloadTask task) {
@@ -295,124 +267,6 @@ public class ImageAdapter extends BaseAdapter {
 			mainActivity.bindService(service, conn, Service.BIND_AUTO_CREATE);
 			// 将该位置的状态设置为运行状态
 			MainFragment.isStartServices[pos] ^= MainFragment.FLIP_MASK;
-		}
-	}
-
-	/**
-	 * 让view显示暂停状态
-	 * 
-	 * @param views
-	 */
-	static void showPause(MainFragment mainFragment, ViewHolder views,
-			int position) {
-		if (views != null) {
-			if (views.progress != null)
-				views.progress.setVisibility(View.GONE);
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.GONE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.stop();
-				}
-			}
-
-			Log.v("liuyx", "pos = " + mainFragment.getClickPos()
-					+ ", set pos = " + position);
-			if (mainFragment.getClickPos() == position) {
-				if (views.loadingPause != null)
-					views.loadingPause.setVisibility(View.VISIBLE);
-			} else {
-				if (views.loadingPause != null)
-					views.loadingPause.setVisibility(View.GONE);
-			}
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.GONE);
-
-		}
-	}
-
-	/**
-	 * 下载完成时显示views的状态
-	 * 
-	 * @param views
-	 */
-	static void showDone(ViewHolder views) {
-		if (views != null) {
-			if (views.progress != null) {
-				views.progress.setVisibility(View.GONE);
-			}
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.GONE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.stop();
-				}
-			}
-
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.VISIBLE);
-		}
-	}
-
-	/**
-	 * 正在下载时显示views的状态
-	 * 
-	 * @param views
-	 * @param byteNum
-	 * @param totalBytes
-	 */
-	static void showRunning(MainFragment mainFragment, ViewHolder views,
-			int pos, long byteNum, long totalBytes) {
-		if (views != null) {
-
-			if (mainFragment.getClickPos() == pos) {
-				double percent = (byteNum * 100.0 / totalBytes);
-				double finPercent = ((int) (percent * 100 + 0.5)) * 1.0 / 100.0;
-				Log.v("liuyx", "percent = " + finPercent + "%");
-				if (views.progress != null) {
-					views.progress.setVisibility(View.VISIBLE);
-					views.progress.setText(finPercent + "%");
-				}
-				if (views.loadingProgress != null) {
-					views.loadingProgress.setVisibility(View.VISIBLE);
-					final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-							.getBackground();
-					if (anim != null) {
-						anim.start();
-					}
-				}
-			} else {
-				if (views.progress != null) {
-					views.progress.setVisibility(View.GONE);
-				}
-				if (views.loadingProgress != null) {
-					views.loadingProgress.setVisibility(View.GONE);
-					final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-							.getBackground();
-					if (anim != null) {
-						anim.stop();
-					}
-				}
-			}
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.GONE);
 		}
 	}
 
