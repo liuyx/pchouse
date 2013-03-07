@@ -23,6 +23,7 @@ import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -715,6 +716,7 @@ public class MainFragment extends Fragment {
 					if (visibilty == View.VISIBLE) {
 						//将原先的状态保存下来,以便一会儿从SHOW_DEL_STATE这个暂存态恢复
 						taskStates.put(pos, state);
+						isSuccessDownloaed.put(pos, state & DownloadTaskState.SHOW_DEL_STATE);
 						setTaskState(pos, DownloadTaskState.SHOW_DEL_STATE);
 					}else{
 						Integer readState = taskStates.get(pos);
@@ -728,6 +730,12 @@ public class MainFragment extends Fragment {
 			}
 		}
 	}
+	
+	/**
+	 * 该变量用于统计下载数据,0为成功下载，1为正在下载
+	 */
+	private SparseIntArray isSuccessDownloaed = new SparseIntArray();
+	
 	
 	@SuppressLint("UseSparseArrays")
 	private SparseArray<Integer> taskStates = new SparseArray<Integer>();
@@ -783,10 +791,10 @@ public class MainFragment extends Fragment {
 		int occupy = 0;
 		for (int i = 0; i < len; i++) {
 			int state = getTaskState(i);
-			if (state == DownloadTaskState.PAUSE_STATE
-					|| state == DownloadTaskState.RUNNING_STATE) {
+			int isSuccessDown = isSuccessDownloaed.get(i);
+			if (state == DownloadTaskState.SHOW_DEL_STATE && isSuccessDown == 1) {
 				++isDownloading;
-			} else if (state == DownloadTaskState.SUCCESS_STATE) {
+			} else if (state == DownloadTaskState.SHOW_DEL_STATE && isSuccessDown == 0) {
 				++hasDownloaded;
 			}
 
