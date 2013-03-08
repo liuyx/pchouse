@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:id="@+id/information_menu_child_main">
+    <LinearLayout android:orientation="vertical"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_weight="1.0"
+	    android:id="@+id/information_menu_top_layout"/>
+    <TableLayout  android:gravity="bottom" 
+        android:layout_width="fill_parent"
+        android:paddingTop="4dip"
+        android:paddingBottom="6dip"
+        android:background="@drawable/information_menu_background"
+        android:layout_height="wrap_content">
+        <TableRow android:gravity="center_vertical" 
+            android:layout_width="fill_parent" 
+            android:layout_height="wrap_content">
+           
+            <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:visibility="gone">
+            <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_refresh" 
+                   android:background="@drawable/information_menu_item_background_default_new" 
+                   android:layout_width="112px"  
+                   android:layout_height="112px" 
+                   android:layout_marginRight="1dip">
+                <ImageView android:id="@+id/information_menu_child_refresh_icon"
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/information_menu_refresh_background"/>
+                <TextView  android:id="@+id/information_menu_child_refresh_text" 
+                     android:gravity="center"
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content"
+                     android:layout_below="@id/information_menu_child_refresh_icon"
+                     android:textColor="@drawable/information_menu_child_text_color" 
+                     android:text="刷新"
+                     android:textStyle="bold" />
+             </RelativeLayout>
+            </LinearLayout>
+            
+            <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+            <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_offine_download" 
+                   android:background="@drawable/information_menu_item_background_default_new" 
+                   android:layout_width="112px"  
+                   android:layout_height="112px" 
+                   android:layout_marginRight="1dip">
+                <ImageView android:id="@+id/information_menu_child_offine_download_icon"
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/app_menu_offline_download"/>
+                <TextView  android:id="@+id/information_menu_child_offine_download_text" 
+                     android:gravity="center" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content"
+                     android:layout_below="@id/information_menu_child_offine_download_icon"
+                     android:textColor="@drawable/information_menu_child_text_color"
+                     android:text="离线下载"
+                     android:textStyle="bold" />
+            </RelativeLayout>
+            </LinearLayout>
+            
+           <!--  
+            <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_select_city" 
+                   android:background="@drawable/information_menu_item_background" 
+                   android:layout_width="wrap_content"  
+                   android:layout_height="fill_parent"
+                   android:layout_weight="1"  
+                   android:layout_marginRight="1dip">
+                <ImageView android:id="@+id/information_menu_child_select_city_icon"
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/app_menu_select_city"/>
+                <TextView  android:id="@+id/information_menu_child_select_city_text" 
+                     android:gravity="center" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content" 
+                     android:layout_below="@id/information_menu_child_select_city_icon"
+                     android:textColor="@color/black" 
+                     android:text="城市选择" />
+            </RelativeLayout>-->
+            <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+            <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_search" 
+                   android:background="@drawable/information_menu_item_background_default_new" 
+                   android:layout_width="112px"  
+                   android:layout_height="112px" 
+                   android:layout_marginRight="1dip">
+                <ImageView android:id="@+id/information_menu_child_search_icon"
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/app_menu_search"/>
+                <TextView  android:id="@+id/information_menu_child_search_text" 
+                     android:gravity="center" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content"
+                     android:layout_below="@id/information_menu_child_search_icon"
+                     android:textColor="@drawable/information_menu_child_text_color"
+                     android:text="文章搜索"
+                     android:textStyle="bold" />
+            </RelativeLayout> 
+            </LinearLayout>
+            
+             <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+            <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_custom_channel" 
+                   android:background="@drawable/information_menu_item_background_default_new" 
+                   android:layout_width="112px"  
+                   android:layout_height="112px" 
+                   android:layout_marginRight="1dip">
+                <ImageView android:id="@+id/information_menu_child_custom_channel_icon"
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/app_menu_custom_channel"/>
+                <TextView  android:id="@+id/information_menu_child_custom_channel_text" 
+                     android:gravity="center" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content"
+                     android:layout_below="@id/information_menu_child_custom_channel_icon"
+                     android:textColor="@drawable/information_menu_child_text_color"
+                     android:text="栏目定制" />
+            </RelativeLayout>
+            </LinearLayout>
+        </TableRow>
+        <TableRow android:gravity="center_vertical" 
+            android:layout_width="fill_parent"
+            android:layout_height="98dip">
+            <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+            <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_favorite" 
+                   android:background="@drawable/information_menu_item_background_default_new" 
+                   android:layout_width="112px"  
+                   android:layout_height="112px" 
+                   android:layout_marginRight="1dip">
+                <ImageView android:id="@+id/information_menu_child_favorite_icon" 
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/app_menu_favorite"/>
+                <TextView  android:id="@+id/information_menu_child_favorite_text" 
+                     android:gravity="center" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content"
+                     android:layout_below="@id/information_menu_child_favorite_icon"
+                     android:textColor="@drawable/information_menu_child_text_color"
+                     android:text="收藏夹"
+                     android:textStyle="bold" />
+            </RelativeLayout>
+            </LinearLayout>
+            
+             <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+            <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_setting" 
+                   android:background="@drawable/information_menu_item_background_default_new" 
+                   android:layout_width="112px"  
+                   android:layout_height="112px" 
+                   android:layout_marginRight="1dip">
+                <ImageView android:id="@+id/information_menu_child_setting_icon"
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/app_menu_setting"/>
+                <TextView  android:id="@+id/information_menu_child_setting_text" 
+                     android:gravity="center" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content"
+                     android:layout_below="@id/information_menu_child_setting_icon" 
+                     android:textColor="@drawable/information_menu_child_text_color"
+                     android:text="设置"
+                     android:textStyle="bold" />
+            </RelativeLayout>
+            </LinearLayout>
+            
+              <LinearLayout android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:layout_weight="1"
+                android:gravity="center">
+            <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_feedback" 
+                   android:background="@drawable/information_menu_item_background_default_new" 
+                   android:layout_width="112px"  
+                   android:layout_height="112px" 
+                   android:layout_marginRight="1dip">
+                <ImageView android:id="@+id/information_menu_child_feedback_icon"
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/app_menu_feedback"/>
+                 <ImageView android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginRight="20dip"
+                    android:layout_marginTop="3dip"
+                    android:src="@drawable/feedback_have_tag"
+                    android:id="@+id/information_feedback_menu_tag"
+                    android:visibility="invisible"/>
+                <TextView  android:id="@+id/information_menu_child_feedback_text" 
+                     android:gravity="center" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content"
+                     android:layout_below="@id/information_menu_child_feedback_icon"
+                     android:textColor="@drawable/information_menu_child_text_color"
+                     android:text="反馈" />
+            </RelativeLayout>
+            </LinearLayout>
+            
+          <!--   <RelativeLayout android:gravity="center" 
+                   android:orientation="vertical" 
+                   android:id="@+id/information_menu_child_exit" 
+                   android:background="@drawable/information_menu_item_background" 
+                   android:layout_width="wrap_content"
+                   android:layout_weight="1"  
+                   android:layout_height="fill_parent">
+                <ImageView android:id="@+id/information_menu_child_exit_icon"
+                     android:layout_width="30dip" 
+                     android:layout_height="30dip"
+                     android:layout_centerHorizontal="true"
+                     android:layout_marginTop="3dip"
+                     android:src="@drawable/app_menu_exit"/>
+                <TextView  android:id="@+id/information_menu_child_exit_text" 
+                     android:gravity="center" 
+                     android:layout_width="fill_parent" 
+                     android:layout_height="wrap_content" 
+                     android:layout_below="@id/information_menu_child_exit_icon"
+                     android:textColor="@color/black"
+                     android:text="退出" /> -->
+        </TableRow>
+    </TableLayout>
+</LinearLayout>

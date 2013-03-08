@@ -15,7 +15,10 @@ import org.json.JSONObject;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import cn.com.pcgroup.android.model.BookShelf;
+import cn.com.pcgroup.android.pchouse.view.LeftFragment;
+import cn.com.pcgroup.android.pchouse.view.MainFragment;
 
 public class MainCatalogActivity extends FragmentActivity {
 	private static final String JSON_FILE = "magazines-ip5-hd.json";
@@ -24,6 +27,9 @@ public class MainCatalogActivity extends FragmentActivity {
 	 */
 	private ArrayList<BookShelf> mags;
 	
+	private LeftFragment leftFragment;
+	private MainFragment mainFragment;
+	
 	/**
 	 * 返回杂志数据列表
 	 * @return
@@ -31,12 +37,22 @@ public class MainCatalogActivity extends FragmentActivity {
 	public ArrayList<BookShelf> getMagDatas(){
 		return mags;
 	}
+	
+	public LeftFragment getLeftFragment(){
+		return leftFragment;
+	}
+	
+	public MainFragment getMainFragment(){
+		return mainFragment;
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.catalog);
 		
+		leftFragment = (LeftFragment) getSupportFragmentManager().findFragmentById(R.id.left_fragment);
+		mainFragment = (MainFragment) getSupportFragmentManager().findFragmentById(R.id.main_fragment);
 		handleJSON();
 	}
 	
@@ -112,6 +128,16 @@ public class MainCatalogActivity extends FragmentActivity {
 		}
 		
 		return result;
+	}
+	
+	public void doPositiveClick() {
+	    // Do stuff here.
+	    Log.i("FragmentAlertDialog", "Positive click!");
+	}
+
+	public void doNegativeClick() {
+	    // Do stuff here.
+	    Log.i("FragmentAlertDialog", "Negative click!");
 	}
 	
 	

@@ -42,7 +42,7 @@ import cn.com.pcgroup.android.framework.http.download.bean.DownloadTask;
 import cn.com.pcgroup.android.model.BookShelf;
 import cn.com.pcgroup.android.pchouse.page.MainCatalogActivity;
 import cn.com.pcgroup.android.pchouse.page.R;
-import cn.com.pcgroup.android.pchouse.view.ImageAdapter.ViewHolder;
+import cn.com.pcgroup.android.pchouse.view.MainFragmentImageAdapter.ViewHolder;
 import cn.com.pcgroup.android.pchouse.view.MultiDownListenerAndViews.DownloadTaskState;
 import cn.com.pcgroup.android.pchouse.view.MultiDownListenerAndViews.SignTaskState;
 import cn.com.pcgroup.android.service.MultiDownloadService;
@@ -68,6 +68,18 @@ public class MainFragment extends Fragment {
 	 * 设置Gridview和Gallery每一个Item运行和暂停切换的标志
 	 */
 	static int[] isStartServices;
+	
+	private static final int SAVED_STATE_MASK = 0xE;
+	
+	/**
+	 * 该变量用于显示可以删除杂志选项时，保存任务的状态,因为显示删除杂志选项时，任务处于可以删除这个暂存态
+	 * 当退出这个暂存态时，任务返回之前的状态
+	 */
+	private SparseIntArray savedStates = new SparseIntArray();
+	
+	
+	@SuppressLint("UseSparseArrays")
+	private SparseArray<Integer> taskStates = new SparseArray<Integer>();
 
 	/**
 	 * 切换书架单本模式和多本模式的变量
@@ -106,6 +118,12 @@ public class MainFragment extends Fragment {
 		startService
 				.setAction("cn.com.pcgroup.android.pchouse.service.MULTI_DOWNLOAD");
 	}
+	
+	private int slideDeltaX; //水平方向滑动的距离
+	/**
+	 * 关于我们页面
+	 */
+	private AboutUs aboutUs;
 	/**
 	 * 显示设置页面
 	 */
@@ -134,8 +152,8 @@ public class MainFragment extends Fragment {
 	private GridView grid;
 	private Gallery gallery;
 
-	private ImageAdapter gridAdapter;
-	private ImageAdapter galleryAdapter;
+	private MainFragmentImageAdapter gridAdapter;
+	private MainFragmentImageAdapter galleryAdapter;
 
 	/*
 	 * 红勾按钮
@@ -162,8 +180,21 @@ public class MainFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		getStatisticsFromPref();
+		//初始化准备工作
+		initPrepareStuff();
+		
+		//初始化各个View的容器
+		initEachViewHolder();
 		initViews();
+	}
+	
+	private void initPrepareStuff(){
+		slideDeltaX = mainActivity.getWindowManager().getDefaultDisplay().getWidth() * 5 / 6 + 15;
+		getStatisticsFromPref();
+	}
+	
+	private void initEachViewHolder(){
+		aboutUs = new AboutUs(mainActivity);
 	}
 
 	/**
@@ -179,6 +210,7 @@ public class MainFragment extends Fragment {
 	}
 
 	private void initViews() {
+		aboutUs.initViews();
 		normalHeader = (ViewGroup) mainActivity
 				.findViewById(R.id.normal_header);
 		longTouchHeader = (ViewGroup) mainActivity
@@ -196,7 +228,7 @@ public class MainFragment extends Fragment {
 		FrameLayout.LayoutParams galleryP = new FrameLayout.LayoutParams(
 				getDisplayWidth() / 2, (int) (getDisplayWidth() * 0.75));
 		galleryAdapter = setAdapterViewAdapter(gallery, galleryP).setMode(
-				ImageAdapter.SINGLE_MODE);
+				MainFragmentImageAdapter.SINGLE_MODE);
 		setAdapterViewItemClickListener(gallery, false);
 		setAdapterViewItemLongClick(gallery, true);
 
@@ -226,11 +258,11 @@ public class MainFragment extends Fragment {
 	 * @param p
 	 * @return 返回配置好的ImageAdapter
 	 */
-	private ImageAdapter setAdapterViewAdapter(
+	private MainFragmentImageAdapter setAdapterViewAdapter(
 			AdapterView<? super BaseAdapter> adapterView,
 			FrameLayout.LayoutParams p) {
 		final ArrayList<BookShelf> datas = mainActivity.getMagDatas();
-		ImageAdapter adapter = null;
+		MainFragmentImageAdapter adapter = null;
 		if (datas != null) {
 			int size = datas.size();
 			if (size != 0) {
@@ -241,7 +273,7 @@ public class MainFragment extends Fragment {
 				// GridView和Gallery公用Adapter，会调用该方法两次，所以会导致重复添加任务和监听器，导致到时候统计数据不准，故第二次不应该再给容器添加监听器
 				if (globalTaskAndListeners.size() == 0)
 					initTasksAndListeners(datas, size);
-				adapter = new ImageAdapter(datas, urlStates, mainActivity, p);
+				adapter = new MainFragmentImageAdapter(datas, urlStates, mainActivity, p);
 				adapter.setTasksAndListeners(globalTaskAndListeners);
 				adapter.setIntent(startService);
 				adapter.setServiceConnection(conn);
@@ -716,9 +748,10 @@ public class MainFragment extends Fragment {
 					if (visibilty == View.VISIBLE) {
 						//将原先的状态保存下来,以便一会儿从SHOW_DEL_STATE这个暂存态恢复
 						taskStates.put(pos, state);
-						isSuccessDownloaed.put(pos, state & DownloadTaskState.SHOW_DEL_STATE);
+						savedStates.put(pos, state & SAVED_STATE_MASK);
 						setTaskState(pos, DownloadTaskState.SHOW_DEL_STATE);
 					}else{
+						//若realState为空，说明没有对该任务没有出现过暂存态，也就是说任务还没有启动
 						Integer readState = taskStates.get(pos);
 						if (readState != null) {
 							setTaskState(pos, readState);
@@ -731,14 +764,7 @@ public class MainFragment extends Fragment {
 		}
 	}
 	
-	/**
-	 * 该变量用于统计下载数据,0为成功下载，1为正在下载
-	 */
-	private SparseIntArray isSuccessDownloaed = new SparseIntArray();
 	
-	
-	@SuppressLint("UseSparseArrays")
-	private SparseArray<Integer> taskStates = new SparseArray<Integer>();
 
 	/**
 	 * 隐藏右上角所有的标签views
@@ -790,11 +816,10 @@ public class MainFragment extends Fragment {
 		int hasDownloaded = 0;
 		int occupy = 0;
 		for (int i = 0; i < len; i++) {
-			int state = getTaskState(i);
-			int isSuccessDown = isSuccessDownloaed.get(i);
-			if (state == DownloadTaskState.SHOW_DEL_STATE && isSuccessDown == 1) {
+			int savedState = savedStates.get(i);
+			if (savedState == DownloadTaskState.PAUSE_STATE || savedState == DownloadTaskState.PAUSE_STATE) {
 				++isDownloading;
-			} else if (state == DownloadTaskState.SHOW_DEL_STATE && isSuccessDown == 0) {
+			} else if (savedState == DownloadTaskState.SUCCESS_STATE) {
 				++hasDownloaded;
 			}
 
@@ -876,14 +901,27 @@ public class MainFragment extends Fragment {
 	 */
 	private void flipSlideRightAndBack() {
 		isShowSetPage ^= FLIP_MASK;
-		int deltaX = mainActivity.getWindowManager().getDefaultDisplay()
-				.getWidth() * 5 / 6;
+		
 		if (isShowSetPage == SHOW_SET_PAGE) { // 显示设置页面时向右滑动
-			slideView.slideview(0, deltaX + 15);
+			slideToRight();
 		} else {
 			// 滑回原位
-			slideView.slideview(0, -deltaX - 15);
+			slideBackToOrigin();
 		}
+	}
+	
+	/**
+	 * 向右滑动
+	 */
+	private void slideToRight(){
+		slideView.slideview(0, slideDeltaX);
+	}
+	
+	/**
+	 * 滑回原位
+	 */
+	private void slideBackToOrigin(){
+		slideView.slideview(0, -slideDeltaX);
 	}
 
 	private void flipGalleryAndGridView() {
@@ -1068,5 +1106,41 @@ public class MainFragment extends Fragment {
 			this.listenerAndViews = listener;
 		}
 	}
+	
+	
+	/**
+	 * 显示设置页面
+	 */
+	void showSetpage(){
+		slideToRight();
+		showBookShelf();
+	}
+	
+	void showBookShelf(){
+		normalHeader.setVisibility(View.VISIBLE);
+		longTouchHeader.setVisibility(View.GONE);
+		aboutUs.aboutUsHeader.setVisibility(View.GONE);
+	}
+	
+	/**
+	 * 显示关于我们页面
+	 */
+	void showAboutUs(){
+		showAboutUsHeader();
+		showAboutUsBody();
+	}
+	
+	private void showAboutUsHeader(){
+		aboutUs.aboutUsHeader.setVisibility(View.VISIBLE);
+		normalHeader.setVisibility(View.GONE);
+		longTouchHeader.setVisibility(View.GONE);
+	}
+	
+	private void showAboutUsBody(){
+		/*
+		 * 在这里显示About us webView
+		 */
+	}
+	
 
 }

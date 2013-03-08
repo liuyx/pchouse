@@ -4,7 +4,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.util.Log;
 import android.view.View;
 import cn.com.pcgroup.android.framework.http.download.MultiDownLoaderListener;
-import cn.com.pcgroup.android.pchouse.view.ImageAdapter.ViewHolder;
+import cn.com.pcgroup.android.pchouse.view.MainFragmentImageAdapter.ViewHolder;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.HeaderStateCount;
 
 public class MultiDownListenerAndViews extends MultiDownLoaderListener{
@@ -19,15 +19,15 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener{
 
 	public static final class DownloadTaskState {
 		public static final int UN_BEGIN_STATE = 0; //未开始下载状态
-		public static final int RUNNING_STATE = 1; //运行状态
-		public static final int SUCCESS_STATE = 2; //下载成功状态
-		public static final int PAUSE_STATE = 3; //暂停状态
-		public static final int DEL_STATE = 4; //已经删除状态
+		public static final int RUNNING_STATE = 0x2; //运行状态
+		public static final int PAUSE_STATE = 0x4; //暂停状态
+		public static final int SUCCESS_STATE = 0x8; //下载成功状态
+		public static final int DEL_STATE = 0x10; //已经删除状态
 		/**
 		 * 暂存态,设计该暂存态的原因是当Gallery和GridView之间切换时，会导致其Adapter调用notifyDataHasChanged方法，刷新Adapter，导致无法正确
 		 * 显示长按AdapterView出现可以删除图标的状态
 		 */
-		public static final int SHOW_DEL_STATE = 5; //显示删除按钮状态
+		public static final int SHOW_DEL_STATE = 0xE; //显示删除按钮状态
 	}
 
 	public static interface SignTaskState {

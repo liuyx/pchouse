@@ -6,11 +6,36 @@
     android:orientation="vertical" >
 
     <RelativeLayout
-        android:id="@+id/normal_header"
+        android:visibility="gone"
+        android:id="@+id/about_us_head"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/pchouse_bg"
         android:orientation="horizontal" >
+
+        <ImageView
+            android:id="@+id/about_us_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_gravity="center_vertical"
+            android:layout_marginLeft="15dip"
+            android:src="@drawable/about_us" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="关于我们" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/normal_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/pchouse_bg"
+        android:orientation="horizontal">
 
         <ImageView
             android:id="@+id/set"
@@ -206,12 +231,12 @@
             android:verticalSpacing="15dip" >
         </GridView>
     </LinearLayout>
-    
-    <cn.com.pcgroup.android.pchouse.view.SingleModeGallery 
-        android:visibility="gone"
+
+    <cn.com.pcgroup.android.pchouse.view.SingleModeGallery
         android:id="@+id/gallery"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:visibility="gone" >
     </cn.com.pcgroup.android.pchouse.view.SingleModeGallery>
 
 </cn.com.pcgroup.android.pchouse.view.SlideView>
