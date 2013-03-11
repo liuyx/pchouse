@@ -16,21 +16,27 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Gallery;
 import android.widget.GridView;
@@ -68,16 +74,14 @@ public class MainFragment extends Fragment {
 	 * 设置Gridview和Gallery每一个Item运行和暂停切换的标志
 	 */
 	static int[] isStartServices;
-	
+
 	private static final int SAVED_STATE_MASK = 0xE;
-	
+
 	/**
-	 * 该变量用于显示可以删除杂志选项时，保存任务的状态,因为显示删除杂志选项时，任务处于可以删除这个暂存态
-	 * 当退出这个暂存态时，任务返回之前的状态
+	 * 该变量用于显示可以删除杂志选项时，保存任务的状态,因为显示删除杂志选项时，任务处于可以删除这个暂存态 当退出这个暂存态时，任务返回之前的状态
 	 */
 	private SparseIntArray savedStates = new SparseIntArray();
-	
-	
+
 	@SuppressLint("UseSparseArrays")
 	private SparseArray<Integer> taskStates = new SparseArray<Integer>();
 
@@ -118,12 +122,16 @@ public class MainFragment extends Fragment {
 		startService
 				.setAction("cn.com.pcgroup.android.pchouse.service.MULTI_DOWNLOAD");
 	}
-	
-	private int slideDeltaX; //水平方向滑动的距离
+
+	private int slideDeltaX; // 水平方向滑动的距离
 	/**
 	 * 关于我们页面
 	 */
 	private AboutUs aboutUs;
+	
+	// 意见反馈页面
+	private AdviceResonpse adviceResponse;
+	
 	/**
 	 * 显示设置页面
 	 */
@@ -180,21 +188,25 @@ public class MainFragment extends Fragment {
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		//初始化准备工作
+		// 初始化准备工作
 		initPrepareStuff();
-		
-		//初始化各个View的容器
+
+		// 初始化各个View的容器
 		initEachViewHolder();
 		initViews();
 	}
-	
-	private void initPrepareStuff(){
-		slideDeltaX = mainActivity.getWindowManager().getDefaultDisplay().getWidth() * 5 / 6 + 15;
+
+	private void initPrepareStuff() {
+		slideDeltaX = mainActivity.getWindowManager().getDefaultDisplay()
+				.getWidth() * 5 / 6 + 15;
 		getStatisticsFromPref();
 	}
-	
-	private void initEachViewHolder(){
-		aboutUs = new AboutUs(mainActivity);
+
+	private void initEachViewHolder() {
+		SetPageHeader header = new SetPageHeader();
+		aboutUs = new AboutUs(header);
+		adviceResponse = new AdviceResonpse(header);
+		logon = new Logon();
 	}
 
 	/**
@@ -210,7 +222,6 @@ public class MainFragment extends Fragment {
 	}
 
 	private void initViews() {
-		aboutUs.initViews();
 		normalHeader = (ViewGroup) mainActivity
 				.findViewById(R.id.normal_header);
 		longTouchHeader = (ViewGroup) mainActivity
@@ -268,12 +279,13 @@ public class MainFragment extends Fragment {
 			if (size != 0) {
 				isStartServices = new int[size];
 				getStatesFromPrefForMap(datas);
-				
+
 				// 初始化任务和监听器
 				// GridView和Gallery公用Adapter，会调用该方法两次，所以会导致重复添加任务和监听器，导致到时候统计数据不准，故第二次不应该再给容器添加监听器
 				if (globalTaskAndListeners.size() == 0)
 					initTasksAndListeners(datas, size);
-				adapter = new MainFragmentImageAdapter(datas, urlStates, mainActivity, p);
+				adapter = new MainFragmentImageAdapter(datas, urlStates,
+						mainActivity, p);
 				adapter.setTasksAndListeners(globalTaskAndListeners);
 				adapter.setIntent(startService);
 				adapter.setServiceConnection(conn);
@@ -541,7 +553,8 @@ public class MainFragment extends Fragment {
 		/**
 		 * 第一次点击某个任务时启动下载服务然后退出该方法
 		 */
-		startDownloadService(position);
+		if(startDownloadService(position))
+			return;
 		// 以后该任务就在运行和暂停状态切换
 		flipStartAndPause(position);
 	}
@@ -651,7 +664,8 @@ public class MainFragment extends Fragment {
 				if (isStartServices != null
 						&& isStartServices.length > position) {
 					isStartServices[position] ^= FLIP_MASK;
-					Log.v("liy", "isStartService = " + isStartServices[position]);
+					Log.v("liy", "isStartService = "
+							+ isStartServices[position]);
 					/**
 					 * 启动下载服务
 					 */
@@ -674,19 +688,21 @@ public class MainFragment extends Fragment {
 	 * 
 	 * @param position
 	 */
-	private void startDownloadService(int position) {
+	private boolean startDownloadService(int position) {
 		final MultiDownloadService downService = downloadService;
 		final Intent i = startService;
 		final ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners = globalTaskAndListeners;
 		if (tasksAndListeners.size() > position) {
 			final DownloadTask task = getTask(position);
 			if (downService == null && task != null) {
+				MultiDownListenerAndViews.showBetweenStartAndPause(getTaskViews(position));
 				conn.setTask(task, position, DownloadTaskState.RUNNING_STATE);
 				mainActivity.bindService(i, conn, Service.BIND_AUTO_CREATE);
 				isStartServices[position] ^= FLIP_MASK;
-				return;
+				return true;
 			}
 		}
+		return false;
 	}
 
 	/**
@@ -713,7 +729,6 @@ public class MainFragment extends Fragment {
 			}
 		}
 	}
-
 
 	private void pauseTask(DownloadTask task) {
 		final MultiDownloadService downService = downloadService;
@@ -744,18 +759,18 @@ public class MainFragment extends Fragment {
 					} else if (state != DownloadTaskState.DEL_STATE) {
 						delImg.setVisibility(visibilty);
 					}
-					
+
 					if (visibilty == View.VISIBLE) {
-						//将原先的状态保存下来,以便一会儿从SHOW_DEL_STATE这个暂存态恢复
+						// 将原先的状态保存下来,以便一会儿从SHOW_DEL_STATE这个暂存态恢复
 						taskStates.put(pos, state);
 						savedStates.put(pos, state & SAVED_STATE_MASK);
 						setTaskState(pos, DownloadTaskState.SHOW_DEL_STATE);
-					}else{
-						//若realState为空，说明没有对该任务没有出现过暂存态，也就是说任务还没有启动
+					} else {
+						// 若realState为空，说明没有对该任务没有出现过暂存态，也就是说任务还没有启动
 						Integer readState = taskStates.get(pos);
 						if (readState != null) {
 							setTaskState(pos, readState);
-						}else{
+						} else {
 							setTaskState(pos, state);
 						}
 					}
@@ -763,8 +778,6 @@ public class MainFragment extends Fragment {
 			}
 		}
 	}
-	
-	
 
 	/**
 	 * 隐藏右上角所有的标签views
@@ -817,7 +830,8 @@ public class MainFragment extends Fragment {
 		int occupy = 0;
 		for (int i = 0; i < len; i++) {
 			int savedState = savedStates.get(i);
-			if (savedState == DownloadTaskState.PAUSE_STATE || savedState == DownloadTaskState.PAUSE_STATE) {
+			if (savedState == DownloadTaskState.PAUSE_STATE
+					|| savedState == DownloadTaskState.PAUSE_STATE) {
 				++isDownloading;
 			} else if (savedState == DownloadTaskState.SUCCESS_STATE) {
 				++hasDownloaded;
@@ -901,7 +915,7 @@ public class MainFragment extends Fragment {
 	 */
 	private void flipSlideRightAndBack() {
 		isShowSetPage ^= FLIP_MASK;
-		
+
 		if (isShowSetPage == SHOW_SET_PAGE) { // 显示设置页面时向右滑动
 			slideToRight();
 		} else {
@@ -909,18 +923,18 @@ public class MainFragment extends Fragment {
 			slideBackToOrigin();
 		}
 	}
-	
+
 	/**
 	 * 向右滑动
 	 */
-	private void slideToRight(){
+	private void slideToRight() {
 		slideView.slideview(0, slideDeltaX);
 	}
-	
+
 	/**
 	 * 滑回原位
 	 */
-	private void slideBackToOrigin(){
+	private void slideBackToOrigin() {
 		slideView.slideview(0, -slideDeltaX);
 	}
 
@@ -1107,40 +1121,220 @@ public class MainFragment extends Fragment {
 		}
 	}
 	
-	
+	/**
+	 * 显示滑动的距离
+	 */
+	int getSlideDeltaX(){
+		return slideDeltaX;
+	}
+
 	/**
 	 * 显示设置页面
 	 */
-	void showSetpage(){
-		slideToRight();
-		showBookShelf();
-	}
-	
-	void showBookShelf(){
-		normalHeader.setVisibility(View.VISIBLE);
-		longTouchHeader.setVisibility(View.GONE);
-		aboutUs.aboutUsHeader.setVisibility(View.GONE);
-	}
-	
+//	void showSetpage() {
+//		gridLayout.setVisibility(View.VISIBLE);
+//		slideToRight();
+//		showBookShelf();
+//	}
+
+//	void showBookShelf() {
+//		normalHeader.setVisibility(View.VISIBLE);
+//		longTouchHeader.setVisibility(View.GONE);
+//		aboutUs.getAboutUsHeader().setVisibility(View.GONE);
+//	}
+
 	/**
 	 * 显示关于我们页面
 	 */
-	void showAboutUs(){
-		showAboutUsHeader();
-		showAboutUsBody();
+	void showAboutUs() {
+		aboutUs.show();
 	}
 	
-	private void showAboutUsHeader(){
-		aboutUs.aboutUsHeader.setVisibility(View.VISIBLE);
-		normalHeader.setVisibility(View.GONE);
-		longTouchHeader.setVisibility(View.GONE);
+	
+	private Logon logon;
+	
+	//------------登录------------------
+	
+	void showSinaLogon(){
+		logon.showSetPageHeader();
 	}
 	
-	private void showAboutUsBody(){
-		/*
-		 * 在这里显示About us webView
+	void showTencentLogon(){
+		logon.showSetPageHeader();
+	}
+	
+	void showQZoneLogon(){
+		logon.showSetPageHeader();
+	}
+	
+	void showAdviceResponse(){
+		adviceResponse.show();
+	}
+	
+	private class SetPageHeader{
+		private ViewGroup rootView;
+		private TextView title;
+		private ImageView backImg;
+		
+		public SetPageHeader(){
+			initViews();
+		}
+		
+		public void show(){
+			rootView.setVisibility(View.VISIBLE);
+		}
+		
+		public void hide(){
+			rootView.setVisibility(View.GONE);
+		}
+		
+		public void setTitle(String titleStr){
+			title.setText(titleStr);
+		}
+		
+		public void initViews(){
+			rootView = (ViewGroup) mainActivity.findViewById(R.id.set_page_head);
+			title = (TextView) mainActivity.findViewById(R.id.header_title);
+			backImg = (ImageView) mainActivity.findViewById(R.id.back_img);
+			backImg.setOnClickListener(listener);
+		}
+		
+		private final View.OnClickListener listener = new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				normalHeader.setVisibility(View.VISIBLE);
+				hide();
+				gridLayout.setVisibility(View.VISIBLE);
+				slideToRight();
+				mainActivity.getLeftFragment().showRootView();
+			}
+		};
+	}
+	
+	//--------------------关于我们-------------------------
+	private class AboutUs{
+		private SetPageHeader header;
+		private WebView webView;
+		private static final String ABOUT_US_URL = "http://www.baidu.com";
+		public AboutUs(SetPageHeader header){
+			this.header = header;
+			initViews();
+		}
+		
+		void initViews() {
+			webView = (WebView) mainActivity.findViewById(R.id.webView);
+		}
+		
+		/**
+		 * 显示关于我们页面
 		 */
+		void show() {
+			showSetPageHeader();
+			showAboutUsBody();
+		}
+		
+		private void showSetPageHeader(){
+			normalHeader.setVisibility(View.GONE);
+			header.setTitle("关于我们");
+			header.show();
+		}
+		
+		private void showAboutUsBody() {
+			/*
+			 * 在这里显示About us webView
+			 */
+			gridLayout.setVisibility(View.GONE);
+			aboutUs.loadAboutUs();
+		}
+		
+		void loadAboutUs(){
+			webView.setVisibility(View.VISIBLE);
+			webView.loadUrl(ABOUT_US_URL);
+		}
 	}
 	
+	//-------------意见反馈-----------------------
+	private class AdviceResonpse{
+		private static final int ADVICE_INIT_LENGTH = 150;
+		private SetPageHeader header;
+		private ViewGroup rootView;
+		// 意见内容
+		private EditText advice;
+		// 提交按钮
+		private Button post;
+		private TextView inputWarnings;
+		
+		public AdviceResonpse(SetPageHeader header){
+			this.header = header;
+			initViews();
+		}
+		
+		private void initViews() {
+			rootView = (ViewGroup) mainActivity.findViewById(R.id.advice_response_root);
+			advice = (EditText) mainActivity.findViewById(R.id.advice_content);
+			post = (Button) mainActivity.findViewById(R.id.post_btn);
+			inputWarnings = (TextView) mainActivity.findViewById(R.id.input_warning);
+			monitorAdviceLenAndChangePostState(); 
+		}
+		
+		/**
+		 * 监视输入建议的长度，并显示提交按钮的状态
+		 */
+		private void monitorAdviceLenAndChangePostState(){
+			advice.addTextChangedListener(new TextWatcher() {
+				
+				@Override
+				public void onTextChanged(CharSequence s, int start, int before, int count) {
+					
+				}
+				
+				@Override
+				public void beforeTextChanged(CharSequence s, int start, int count,
+						int after) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+				@Override
+				public void afterTextChanged(Editable s) {
+					if(s.length() > ADVICE_INIT_LENGTH){
+						post.setClickable(false);
+						int len = s.length() - ADVICE_INIT_LENGTH;
+						inputWarnings.setTextColor(Color.RED);
+						inputWarnings.setText("已超出" + len + "个字");
+					}else{
+						post.setClickable(true);
+						int len = ADVICE_INIT_LENGTH - s.length();
+						inputWarnings.setTextColor(Color.parseColor("#808080"));
+						inputWarnings.setText("还可以输入" + len + "个字");
+					}
+				}
+			});
+		}
+		
+		public void show(){
+			normalHeader.setVisibility(View.GONE);
+			header.setTitle("意见反馈");
+			header.show();
+			gridLayout.setVisibility(View.GONE);
+			rootView.setVisibility(View.VISIBLE);
+			
+		}
+	}
+	
+	private class Logon{
+		/**
+		 * 显示设置页面的头部
+		 */
+		private void showSetPageHeader() {
+			aboutUs.header.show();
+			normalHeader.setVisibility(View.GONE);
+			longTouchHeader.setVisibility(View.GONE);
+			
+			aboutUs.header.setTitle("登录");
+		}
+
+	}
 
 }
