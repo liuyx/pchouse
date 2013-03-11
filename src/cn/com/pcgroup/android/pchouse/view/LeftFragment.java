@@ -15,7 +15,13 @@ public class LeftFragment extends Fragment {
 	private static MainCatalogActivity mainActivity;
 	
 	private MainFragment mainFragment;
+	//当前页面的根
 	private ViewGroup rootView;
+	
+	//-------清除杂志----------
+	private View clearMagazineOptionView;
+	private PopupWindow mPopUpWindow;
+	private View cancel; 
 	
 	private ViewGroup accountManageLayout;
 	private ViewGroup clearMagazineLayout;
@@ -80,7 +86,7 @@ public class LeftFragment extends Fragment {
 				mainFragment.showAboutUs();
 			}else if(id == clearMagazineLayout.getId()){
 				//显示清除杂志选项
-				showClearMagazineOption();
+				showClearmagaizinePop();
 			}else if(id == accountManageLayout.getId()){
 				showAccountManageDetailLayout();
 			}else if(id == sinaAccountManage.getId()){
@@ -100,26 +106,38 @@ public class LeftFragment extends Fragment {
 		}
 	};
 	
-	void showRootView(){
-		rootView.setVisibility(View.VISIBLE);
+	private void initIfViewsAreNull(){
+		if(clearMagazineOptionView == null)
+			clearMagazineOptionView = LayoutInflater.from(mainActivity).inflate(
+					R.layout.clear_magazine, null);
+		if(mPopUpWindow == null){
+			mPopUpWindow = new PopupWindow(clearMagazineOptionView,
+	                 LinearLayout.LayoutParams.FILL_PARENT,
+	                 LinearLayout.LayoutParams.FILL_PARENT);
+			mPopUpWindow.setAnimationStyle(R.style.menuPopupWindowAnimation);
+		}
+		
+		if(cancel == null){
+			cancel = clearMagazineOptionView.findViewById(R.id.cancel);
+			cancel.setOnClickListener(new View.OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					mPopUpWindow.dismiss();
+				}
+			});
+		}
+		
+		if(rootView == null)
+			rootView = (LinearLayout) mainActivity.findViewById(R.id.left_fragment_root_view);
 	}
 	
-	private void showClearMagazineOption(){
-		View root = LayoutInflater.from(mainActivity).inflate(R.layout.clear_magazine, null);
-		 final PopupWindow mPopupWindow = new PopupWindow(root,
-                 LinearLayout.LayoutParams.FILL_PARENT,
-                 LinearLayout.LayoutParams.FILL_PARENT);
-		 View cancel = root.findViewById(R.id.cancel);
-		 cancel.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				mPopupWindow.dismiss();
-			}
-		});
-		 mPopupWindow.setAnimationStyle(R.style.menuPopupWindowAnimation);
-		 LinearLayout rootView = (LinearLayout) mainActivity.findViewById(R.id.left_fragment_root_view);
-		 mPopupWindow.showAtLocation(rootView, Gravity.BOTTOM, 0, 0);
+	/**
+	 * 显示清除杂志选项PopupWindow
+	 */
+	private void showClearmagaizinePop(){
+		initIfViewsAreNull();
+		mPopUpWindow.showAtLocation(rootView, Gravity.BOTTOM, 0, 0);
 	}
 	
 	private void showAccountManageDetailLayout(){
@@ -135,5 +153,12 @@ public class LeftFragment extends Fragment {
 			accountManageDetailLayout.setVisibility(View.GONE);
 	}
 	
-
+	void showRootView(){
+		rootView.setVisibility(View.VISIBLE);
+	}
+	
+	void hideRootView(){
+		rootView.setVisibility(View.GONE);
+	}
+	
 }

@@ -244,11 +244,8 @@
     <include
         layout="@layout/advice_response"
         android:visibility="gone" />
-
-    <WebView
-        android:id="@+id/webView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:visibility="gone" />
+	
+    <include layout="@layout/about_us"
+        android:visibility="gone"/>
 
 </cn.com.pcgroup.android.pchouse.view.SlideView>

@@ -30,7 +30,6 @@ import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
@@ -1203,11 +1202,16 @@ public class MainFragment extends Fragment {
 			
 			@Override
 			public void onClick(View v) {
+				//显示书架头部
 				normalHeader.setVisibility(View.VISIBLE);
+				//隐藏当前的头部
 				hide();
+				//显示书架
 				gridLayout.setVisibility(View.VISIBLE);
 				slideToRight();
+				//显示设置页面
 				mainActivity.getLeftFragment().showRootView();
+//				UIUtil.hideSoftKeybord(mainActivity, adviceResponse.advice);
 			}
 		};
 	}
@@ -1215,21 +1219,21 @@ public class MainFragment extends Fragment {
 	//--------------------关于我们-------------------------
 	private class AboutUs{
 		private SetPageHeader header;
-		private WebView webView;
-		private static final String ABOUT_US_URL = "http://www.baidu.com";
+		private ViewGroup aboutUsRootView;
 		public AboutUs(SetPageHeader header){
 			this.header = header;
 			initViews();
 		}
 		
 		void initViews() {
-			webView = (WebView) mainActivity.findViewById(R.id.webView);
+			aboutUsRootView = (ViewGroup) mainActivity.findViewById(R.id.about_us_root);
 		}
 		
 		/**
 		 * 显示关于我们页面
 		 */
 		void show() {
+			adviceResponse.hide();
 			showSetPageHeader();
 			showAboutUsBody();
 		}
@@ -1245,12 +1249,12 @@ public class MainFragment extends Fragment {
 			 * 在这里显示About us webView
 			 */
 			gridLayout.setVisibility(View.GONE);
+			mainActivity.getLeftFragment().hideRootView();
 			aboutUs.loadAboutUs();
 		}
 		
 		void loadAboutUs(){
-			webView.setVisibility(View.VISIBLE);
-			webView.loadUrl(ABOUT_US_URL);
+			aboutUsRootView.setVisibility(View.VISIBLE);
 		}
 	}
 	
@@ -1319,7 +1323,11 @@ public class MainFragment extends Fragment {
 			header.show();
 			gridLayout.setVisibility(View.GONE);
 			rootView.setVisibility(View.VISIBLE);
-			
+		}
+		
+		public void hide(){
+			header.hide();
+			rootView.setVisibility(View.GONE);
 		}
 	}
 	

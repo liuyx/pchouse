@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/about_us_root"
+    android:orientation="vertical" >
+
+    <ImageView
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/about_us_logo" />
+
+    <TextView
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="《PChouse家居杂志》是太平洋家居网
+		针对iPhone用户精心打造的一本免费iPhone
+		电子杂志，也是国内最优质的家居iPhone电
+		子杂志之一，杂志对太平洋家居网内容进行
+		精品扩展，每月发布1期。
+		
+		杂志内容方面，每月设有精彩栏目，二十多篇
+		精华文章，高清产品、家居场景组图尽情欣赏；
+		20钟以上互动展现新方式，给您最畅快的家居
+		资讯阅读体验。" />
+    
+    <LinearLayout 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/about_us_qq_img"/>
+        <TextView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:text="QQ群：147904986"/>
+    </LinearLayout>
+    <LinearLayout 
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <ImageView android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/about_us_sina"/>
+        <TextView android:layout_width="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_height="wrap_content"
+            android:text="微博：weibo.com/pconline"/>
+    </LinearLayout>
+
+</LinearLayout>
