@@ -383,8 +383,8 @@ public class MainFragment extends Fragment {
 		if (listAndViews != null) {
 			listAndViews.state = state;
 			freshUrlStates(pos, state);
-			gridAdapter.notifyDataSetChanged();
-			galleryAdapter.notifyDataSetChanged();
+//			gridAdapter.notifyDataSetChanged();
+//			galleryAdapter.notifyDataSetChanged();
 			test(urlStates);
 		}
 	}
@@ -629,7 +629,6 @@ public class MainFragment extends Fragment {
 	 * @param pos
 	 */
 	private void onDelMagazine(int pos) {
-		setDelAdminImg(pos);
 		// 刷新下载数据
 		onDelFreshTaskData(pos);
 		taskStates.remove(pos);
@@ -639,12 +638,6 @@ public class MainFragment extends Fragment {
 		hideAllTagViews(pos);
 	}
 
-	private void setDelAdminImg(int pos) {
-		ImageView gridBaseImg = getBaseImg(pos);
-		if (gridBaseImg != null) {
-			gridBaseImg.setImageResource(R.drawable.del_admin_img);
-		}
-	}
 
 	/**
 	 * 在启动任务和暂停任务之间不断切换
@@ -769,11 +762,22 @@ public class MainFragment extends Fragment {
 							}
 						}
 					}
-
+				}
+				
+				/**
+				 * 控制显示或隐藏透明度
+				 */
+				if (visibilty == View.GONE) {
+					MultiDownListenerAndViews.showNoAlpha(getTaskViews(pos));
+				}else{
+					if (state == DownloadTaskState.DEL_STATE) {
+						MultiDownListenerAndViews.showAlpha(getTaskViews(pos));
+					}
 				}
 			}
 		}
 	}
+	
 
 	/**
 	 * 隐藏右上角所有的标签views
@@ -805,6 +809,8 @@ public class MainFragment extends Fragment {
 		ImageView loadingDone = getDoneImg(pos);
 		if (loadingDone != null)
 			loadingDone.setVisibility(View.GONE);
+		
+		MultiDownListenerAndViews.showAlpha(getTaskViews(pos));
 	}
 
 	/**

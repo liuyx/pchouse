@@ -6,6 +6,7 @@ import java.util.HashMap;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -145,6 +146,9 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 		ImageView betwenStartAndPauseImg; //开始和暂停之间的
 		ProgressBar progsBar;
 		TextView summary; // 简介,用于单本模式下的内容介绍
+		ImageView transparentDelImg; //删除时的透明图片
+		
+		Bitmap bm;
 		@Override
 		public String toString() {
 			return "ViewHolder [magazineImg=" + magazineImg + ", month="
@@ -176,7 +180,7 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 				if (magazineImgUrl != null && !magazineImgUrl.equals("")
 						&& !magazineImgUrl.equals("null")) {
 					holder.magazineImg.setTag(magazineImgUrl);
-					AsynLoadImageUtils.getInstance().loadAndFillImg(
+					holder.bm = AsynLoadImageUtils.getInstance().loadAndFillImg(
 							mainActivity, holder.magazineImg, magazineImgUrl,
 							false, holder.progsBar);
 				}
@@ -262,6 +266,7 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 			break;
 		case MultiDownListenerAndViews.DownloadTaskState.SHOW_DEL_STATE:
 			MultiDownListenerAndViews.showCanDelState(views);
+			break;
 		default:
 			break;
 		}

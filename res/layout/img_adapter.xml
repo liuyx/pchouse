@@ -15,6 +15,12 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/pchouse2"/>
+        
+        <ImageView android:id="@+id/del_bg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/transparent"
+            android:visibility="gone"/>
 
         <ImageView
             android:id="@+id/img_right_top_is_downloading"
