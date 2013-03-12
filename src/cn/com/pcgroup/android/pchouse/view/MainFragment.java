@@ -26,7 +26,6 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -79,8 +78,6 @@ public class MainFragment extends Fragment {
 	/**
 	 * 该变量用于显示可以删除杂志选项时，保存任务的状态,因为显示删除杂志选项时，任务处于可以删除这个暂存态 当退出这个暂存态时，任务返回之前的状态
 	 */
-	private SparseIntArray savedStates = new SparseIntArray();
-
 	@SuppressLint("UseSparseArrays")
 	private SparseArray<Integer> taskStates = new SparseArray<Integer>();
 
@@ -520,7 +517,7 @@ public class MainFragment extends Fragment {
 	}
 
 	private void setAdapterViewItemClickListener(
-			AdapterView<? super BaseAdapter> adapterView,
+			final AdapterView<? super BaseAdapter> adapterView,
 			final boolean isGridView) {
 		adapterView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -635,6 +632,7 @@ public class MainFragment extends Fragment {
 		setDelAdminImg(pos);
 		// 刷新下载数据
 		onDelFreshTaskData(pos);
+		taskStates.remove(pos);
 		// 设置该项的状态
 		setTaskState(pos, DownloadTaskState.DEL_STATE);
 		// 隐藏所有标签view
@@ -757,22 +755,21 @@ public class MainFragment extends Fragment {
 						hideAllTagViews(pos);
 					} else if (state != DownloadTaskState.DEL_STATE) {
 						delImg.setVisibility(visibilty);
-					}
-
-					if (visibilty == View.VISIBLE) {
-						// 将原先的状态保存下来,以便一会儿从SHOW_DEL_STATE这个暂存态恢复
-						taskStates.put(pos, state);
-						savedStates.put(pos, state & SAVED_STATE_MASK);
-						setTaskState(pos, DownloadTaskState.SHOW_DEL_STATE);
-					} else {
-						// 若realState为空，说明没有对该任务没有出现过暂存态，也就是说任务还没有启动
-						Integer readState = taskStates.get(pos);
-						if (readState != null) {
-							setTaskState(pos, readState);
+						if (visibilty == View.VISIBLE) {
+							// 将原先的状态保存下来,以便一会儿从SHOW_DEL_STATE这个暂存态恢复
+							taskStates.put(pos, state & SAVED_STATE_MASK);
+							setTaskState(pos, DownloadTaskState.SHOW_DEL_STATE);
 						} else {
-							setTaskState(pos, state);
+							// 若realState为空，说明没有对该任务没有出现过暂存态，也就是说任务还没有启动
+							Integer realState = taskStates.get(pos);
+							if (realState != null) {
+								setTaskState(pos, realState);
+							} else {
+								setTaskState(pos, state);
+							}
 						}
 					}
+
 				}
 			}
 		}
@@ -828,9 +825,9 @@ public class MainFragment extends Fragment {
 		int hasDownloaded = 0;
 		int occupy = 0;
 		for (int i = 0; i < len; i++) {
-			int savedState = savedStates.get(i);
+			int savedState = taskStates.get(i) == null ? DownloadTaskState.UN_BEGIN_STATE : taskStates.get(i);
 			if (savedState == DownloadTaskState.PAUSE_STATE
-					|| savedState == DownloadTaskState.PAUSE_STATE) {
+					|| savedState == DownloadTaskState.RUNNING_STATE) {
 				++isDownloading;
 			} else if (savedState == DownloadTaskState.SUCCESS_STATE) {
 				++hasDownloaded;
@@ -854,7 +851,7 @@ public class MainFragment extends Fragment {
 	 * @param pos
 	 */
 	private void onDelFreshTaskData(int pos) {
-		int state = getTaskState(pos);
+		int state = taskStates.get(pos) == null ? DownloadTaskState.UN_BEGIN_STATE : taskStates.get(pos);
 		DownloadTask task = getTask(pos);
 
 		// 清空监听器的占用空间数据
@@ -880,6 +877,7 @@ public class MainFragment extends Fragment {
 		}
 
 		flushHeaderData();
+		
 	}
 
 	/**
@@ -943,11 +941,13 @@ public class MainFragment extends Fragment {
 			gridLayout.setVisibility(View.GONE);
 			gallery.setVisibility(View.VISIBLE);
 			galleryAdapter.notifyDataSetChanged();
+			mainActivity.getLeftFragment().hideRootView();
 		} else {// 显示多本模式
 			gridLayout.setVisibility(View.VISIBLE);
 			gallery.setVisibility(View.GONE);
 			// 刷新界面
 			gridAdapter.notifyDataSetChanged();
+			mainActivity.getLeftFragment().showRootView();
 		}
 	}
 

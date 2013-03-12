@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,8 +28,9 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 	public static final int MANY_MODE = 0;
 	public static final int SINGLE_MODE = 1;
 	private static Activity mainActivity;
+	private SparseArray<ViewHolder> viewHolders = new SparseArray<ViewHolder>();
 	private ArrayList<BookShelf> magsData;
-	private ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners;
+	private static ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners;
 	/**
 	 * 各个任务的状态
 	 */
@@ -53,7 +55,7 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 
 	public void setTasksAndListeners(
 			ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners) {
-		this.tasksAndListeners = tasksAndListeners;
+		MainFragmentImageAdapter.tasksAndListeners = tasksAndListeners;
 	}
 
 	public MainFragmentImageAdapter setMode(int mode) {
@@ -78,7 +80,12 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 
 	@Override
 	public Object getItem(int position) {
-		return magsData != null ? magsData.get(position).getUrl() : "";
+		if(viewHolders.size() > position){
+			ViewHolder holder = viewHolders.get(position);
+			if(holder != null)
+				return holder;
+		}
+		return null;
 	}
 
 	@Override
@@ -118,10 +125,11 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 			holder.summary.setVisibility(View.VISIBLE);
 		}
 		convertView.setTag(holder);
+		viewHolders.put(position, holder);
 
 		String magazingUrl = loadEachItem(position, holder);
-		showEachItemState(position, holder, magazingUrl);
-
+		showEachItemState(position, viewHolders.get(position), magazingUrl);
+		
 		return convertView;
 	}
 
@@ -137,6 +145,17 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 		ImageView betwenStartAndPauseImg; //开始和暂停之间的
 		ProgressBar progsBar;
 		TextView summary; // 简介,用于单本模式下的内容介绍
+		@Override
+		public String toString() {
+			return "ViewHolder [magazineImg=" + magazineImg + ", month="
+					+ month + ", size=" + size + ", progress=" + progress
+					+ ", loadingProgress=" + loadingProgress
+					+ ", loadingPause=" + loadingPause + ", magazingDel="
+					+ magazingDel + ", loadingDone=" + loadingDone
+					+ ", betwenStartAndPauseImg=" + betwenStartAndPauseImg
+					+ ", progsBar=" + progsBar + ", summary=" + summary + "]";
+		}
+		
 	}
 
 	private String loadEachItem(int position, ViewHolder holder) {
