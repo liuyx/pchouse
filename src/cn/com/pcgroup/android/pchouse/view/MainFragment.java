@@ -324,12 +324,12 @@ public class MainFragment extends Fragment {
 		return null;
 	}
 
-	private ImageView getBaseImg(int pos) {
-		final ViewHolder views = getTaskViews(pos);
-		if (views != null)
-			return views.magazineImg;
-		return null;
-	}
+//	private ImageView getBaseImg(int pos) {
+//		final ViewHolder views = getTaskViews(pos);
+//		if (views != null)
+//			return views.magazineImg;
+//		return null;
+//	}
 
 	private ImageView getDelImg(int pos) {
 		final ViewHolder views = getTaskViews(pos);
@@ -383,8 +383,8 @@ public class MainFragment extends Fragment {
 		if (listAndViews != null) {
 			listAndViews.state = state;
 			freshUrlStates(pos, state);
-//			gridAdapter.notifyDataSetChanged();
-//			galleryAdapter.notifyDataSetChanged();
+			gridAdapter.notifyDataSetChanged();
+			galleryAdapter.notifyDataSetChanged();
 			test(urlStates);
 		}
 	}
@@ -411,6 +411,13 @@ public class MainFragment extends Fragment {
 		}
 		return null;
 	}
+	
+	boolean isLongTouchHeaderVisiblity(){
+		if(longTouchHeader.getVisibility() == View.VISIBLE)
+			return true;
+		return false;
+	}
+	
 
 	/**
 	 * 初始化各个任务的状态，将其值保存在urlStates Map中
@@ -634,6 +641,7 @@ public class MainFragment extends Fragment {
 		taskStates.remove(pos);
 		// 设置该项的状态
 		setTaskState(pos, DownloadTaskState.DEL_STATE);
+		MultiDownListenerAndViews.showAlpha(getTaskViews(pos));
 		// 隐藏所有标签view
 		hideAllTagViews(pos);
 	}
@@ -810,7 +818,6 @@ public class MainFragment extends Fragment {
 		if (loadingDone != null)
 			loadingDone.setVisibility(View.GONE);
 		
-		MultiDownListenerAndViews.showAlpha(getTaskViews(pos));
 	}
 
 	/**

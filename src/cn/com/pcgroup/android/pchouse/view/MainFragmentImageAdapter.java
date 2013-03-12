@@ -3,7 +3,6 @@ package cn.com.pcgroup.android.pchouse.view;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,6 +19,7 @@ import android.widget.TextView;
 import cn.com.pcgroup.android.framework.http.client.AsynLoadImageUtils;
 import cn.com.pcgroup.android.framework.http.download.bean.DownloadTask;
 import cn.com.pcgroup.android.model.BookShelf;
+import cn.com.pcgroup.android.pchouse.page.MainCatalogActivity;
 import cn.com.pcgroup.android.pchouse.page.R;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.DownloadTaskAndListenerAndViews;
 import cn.com.pcgroup.android.pchouse.view.MainFragment.MyServiceConnection;
@@ -28,7 +28,7 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 	// 此ImageAdapter为书架单本模式和多本模式进行适配,默认为多本模式适配
 	public static final int MANY_MODE = 0;
 	public static final int SINGLE_MODE = 1;
-	private static Activity mainActivity;
+	private static MainCatalogActivity mainActivity;
 	private SparseArray<ViewHolder> viewHolders = new SparseArray<ViewHolder>();
 	private ArrayList<BookShelf> magsData;
 	private static ArrayList<DownloadTaskAndListenerAndViews> tasksAndListeners;
@@ -65,7 +65,7 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 	}
 
 	public MainFragmentImageAdapter(ArrayList<BookShelf> magsData,
-			HashMap<String, Integer> urlStates, Activity context,
+			HashMap<String, Integer> urlStates, MainCatalogActivity context,
 			FrameLayout.LayoutParams p) {
 		this.magsData = magsData;
 		taskUrlStates = urlStates;
@@ -267,6 +267,11 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 		case MultiDownListenerAndViews.DownloadTaskState.SHOW_DEL_STATE:
 			MultiDownListenerAndViews.showCanDelState(views);
 			break;
+		case MultiDownListenerAndViews.DownloadTaskState.DEL_STATE:
+			if (mainActivity.getMainFragment().isLongTouchHeaderVisiblity()) {
+				MultiDownListenerAndViews.showAlpha(views);
+			}
+			break;
 		default:
 			break;
 		}
@@ -279,7 +284,6 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 	 */
 	private void startShowProgress(int pos, String taskUrl, ViewHolder views) {
 		if (views != null) {
-			
 			MultiDownListenerAndViews.showBetweenStartAndPause(views);
 			// 启动下载服务
 			startDownloadService(pos, tasksAndListeners.get(pos).task);

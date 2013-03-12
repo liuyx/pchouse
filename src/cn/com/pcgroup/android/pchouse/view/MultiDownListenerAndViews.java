@@ -362,7 +362,7 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener {
 		if(views.magazineImg != null){
 			final Bitmap bm = views.bm;
 			if (bm != null) {
-				Bitmap bitmap = setAlpha(bm, 40);
+				Bitmap bitmap = setAlpha(bm, 35);
 				views.magazineImg.setImageBitmap(bitmap);
 			}
 		}
