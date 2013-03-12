@@ -146,20 +146,7 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 		ImageView betwenStartAndPauseImg; //开始和暂停之间的
 		ProgressBar progsBar;
 		TextView summary; // 简介,用于单本模式下的内容介绍
-		ImageView transparentDelImg; //删除时的透明图片
-		
-		Bitmap bm;
-		@Override
-		public String toString() {
-			return "ViewHolder [magazineImg=" + magazineImg + ", month="
-					+ month + ", size=" + size + ", progress=" + progress
-					+ ", loadingProgress=" + loadingProgress
-					+ ", loadingPause=" + loadingPause + ", magazingDel="
-					+ magazingDel + ", loadingDone=" + loadingDone
-					+ ", betwenStartAndPauseImg=" + betwenStartAndPauseImg
-					+ ", progsBar=" + progsBar + ", summary=" + summary + "]";
-		}
-		
+		Bitmap bm; // magazineImg需要装载的图片
 	}
 
 	private String loadEachItem(int position, ViewHolder holder) {
@@ -296,8 +283,6 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 			conn.setTask(task, pos,
 					MultiDownListenerAndViews.DownloadTaskState.RUNNING_STATE);
 			mainActivity.bindService(service, conn, Service.BIND_AUTO_CREATE);
-//			// 将该位置的状态设置为运行状态
-//			MainFragment.isStartServices[pos] ^= MainFragment.FLIP_MASK;
 		}
 	}
 

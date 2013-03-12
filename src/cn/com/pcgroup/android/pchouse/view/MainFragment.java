@@ -324,12 +324,6 @@ public class MainFragment extends Fragment {
 		return null;
 	}
 
-//	private ImageView getBaseImg(int pos) {
-//		final ViewHolder views = getTaskViews(pos);
-//		if (views != null)
-//			return views.magazineImg;
-//		return null;
-//	}
 
 	private ImageView getDelImg(int pos) {
 		final ViewHolder views = getTaskViews(pos);
@@ -793,31 +787,8 @@ public class MainFragment extends Fragment {
 	 * @param pos
 	 */
 	private void hideAllTagViews(int pos) {
-		ImageView delImg = getDelImg(pos);
-		if (delImg != null)
-			delImg.setVisibility(View.GONE);
-		ImageView pauseImg = getPauseImg(pos);
-		if (pauseImg != null)
-			pauseImg.setVisibility(View.GONE);
-
-		TextView progress = getProgressTxt(pos);
-		if (progress != null)
-			progress.setVisibility(View.GONE);
-
-		ImageView loadingProgress = getPauseImg(pos);
-		if (loadingProgress != null) {
-			final AnimationDrawable anim = (AnimationDrawable) loadingProgress
-					.getBackground();
-			if (anim != null) {
-				anim.stop();
-			}
-			loadingProgress.setVisibility(View.GONE);
-		}
-
-		ImageView loadingDone = getDoneImg(pos);
-		if (loadingDone != null)
-			loadingDone.setVisibility(View.GONE);
-		
+		MultiDownListenerAndViews.hideAllTagViewsExceptRunning(getTaskViews(pos));
+		MultiDownListenerAndViews.hideLoadingProgress(getTaskViews(pos));
 	}
 
 	/**
@@ -1140,20 +1111,6 @@ public class MainFragment extends Fragment {
 		return slideDeltaX;
 	}
 
-	/**
-	 * 显示设置页面
-	 */
-//	void showSetpage() {
-//		gridLayout.setVisibility(View.VISIBLE);
-//		slideToRight();
-//		showBookShelf();
-//	}
-
-//	void showBookShelf() {
-//		normalHeader.setVisibility(View.VISIBLE);
-//		longTouchHeader.setVisibility(View.GONE);
-//		aboutUs.getAboutUsHeader().setVisibility(View.GONE);
-//	}
 
 	/**
 	 * 显示关于我们页面
@@ -1224,7 +1181,6 @@ public class MainFragment extends Fragment {
 				slideToRight();
 				//显示设置页面
 				mainActivity.getLeftFragment().showRootView();
-//				UIUtil.hideSoftKeybord(mainActivity, adviceResponse.advice);
 			}
 		};
 	}

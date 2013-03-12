@@ -10,15 +10,18 @@ import cn.com.pcgroup.android.pchouse.view.MainFragment.HeaderStateCount;
 import cn.com.pcgroup.android.pchouse.view.MainFragmentImageAdapter.ViewHolder;
 
 public class MultiDownListenerAndViews extends MultiDownLoaderListener {
-	ViewHolder views;
-	String taskUrl;
-	int state = DownloadTaskState.UN_BEGIN_STATE;
-	int occupy;
+	private static final int ALPHA = 35; // 图片处于删除状态时的透明度
+	private static final int FULL_ALPHA = 100; //图片正常状态下的透明度
 	private long totalBytes;
 	private HeaderStateCount stateCount;
 	private SignTaskState signState;
 	private int position;
-
+	ViewHolder views;
+	String taskUrl;
+	int state = DownloadTaskState.UN_BEGIN_STATE;
+	int occupy;
+	
+	
 	public static final class DownloadTaskState {
 		public static final int UN_BEGIN_STATE = 0; // 未开始下载状态
 		public static final int RUNNING_STATE = 0x2; // 运行状态
@@ -83,7 +86,6 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener {
 		if (signState != null) {
 			signState.signTaskState(position, taskUrl, state);
 		}
-
 		showPause(views, position);
 	}
 
@@ -128,6 +130,75 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener {
 	static void showRunning(ViewHolder views, int pos, long byteNum,
 			long totalBytes) {
 		if (views != null) {
+			showLoadingProgress(views, pos, byteNum, totalBytes);
+			hideAllTagViewsExceptRunning(views);
+		}
+	}
+	
+
+	/**
+	 * 下载完成时显示views的状态
+	 * 
+	 * @param views
+	 */
+	static void showDone(ViewHolder views) {
+		if (views != null) {
+			hideLoadingProgress(views);
+			hideAllTagViewsExceptRunning(views);
+			if(views.loadingDone != null)
+				views.loadingDone.setVisibility(View.VISIBLE);
+		}
+	}
+
+	/**
+	 * 让view显示暂停状态
+	 * 
+	 * @param views
+	 */
+	static void showPause(ViewHolder views, int position) {
+		if (views != null) {
+			hideLoadingProgress(views);
+			hideAllTagViewsExceptRunning(views);
+			if(views.loadingPause != null)
+				views.loadingPause.setVisibility(View.VISIBLE);
+		}
+	}
+
+	static void showBetweenStartAndPause(ViewHolder views) {
+		if (views != null) {
+			hideLoadingProgress(views);
+			hideAllTagViewsExceptRunning(views);
+			if(views.betwenStartAndPauseImg != null)
+				views.betwenStartAndPauseImg.setVisibility(View.VISIBLE);
+		}
+	}
+
+	static void showCanDelState(ViewHolder views) {
+		if (views != null) {
+			hideLoadingProgress(views);
+			hideAllTagViewsExceptRunning(views);
+			if(views.magazingDel != null)
+				views.magazingDel.setVisibility(View.VISIBLE);
+		}
+	}
+
+	static void showDelState(ViewHolder views) {
+		if (views != null) {
+			hideLoadingProgress(views);
+			hideAllTagViewsExceptRunning(views);
+		}
+	}
+	
+	/**
+	 * 显示加载百分比
+	 * @param views
+	 * @param pos
+	 * @param byteNum
+	 * @param totalBytes
+	 */
+	static void showLoadingProgress(ViewHolder views, int pos, long byteNum,
+			long totalBytes){
+		if (views != null) {
 			double percent = (byteNum * 100.0 / totalBytes);
 			double finPercent = ((int) (percent * 100 + 0.5)) * 1.0 / 100.0;
 			Log.v("liuyx", "percent = " + finPercent + "%");
@@ -143,32 +214,14 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener {
 					anim.start();
 				}
 			}
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.GONE);
-
-			if (views.betwenStartAndPauseImg != null)
-				views.betwenStartAndPauseImg.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.transparentDelImg != null)
-				views.transparentDelImg.setVisibility(View.GONE);
 		}
 	}
-
+	
 	/**
-	 * 下载完成时显示views的状态
-	 * 
+	 * 隐藏加载百分比
 	 * @param views
 	 */
-	static void showDone(ViewHolder views) {
+	static void hideLoadingProgress(ViewHolder views){
 		if (views != null) {
 			if (views.progress != null) {
 				views.progress.setVisibility(View.GONE);
@@ -181,162 +234,19 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener {
 					anim.stop();
 				}
 			}
-
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.VISIBLE);
-
-			if (views.betwenStartAndPauseImg != null)
-				views.betwenStartAndPauseImg.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.transparentDelImg != null)
-				views.transparentDelImg.setVisibility(View.GONE);
 		}
 	}
-
-	/**
-	 * 让view显示暂停状态
-	 * 
-	 * @param views
-	 */
-	static void showPause(ViewHolder views, int position) {
-		if (views != null) {
-			if (views.progress != null)
-				views.progress.setVisibility(View.GONE);
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.GONE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.stop();
-				}
-			}
-
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.VISIBLE);
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
+	
+	static void hideAllTagViewsExceptRunning(ViewHolder views){
+		if(views != null){
+			if(views.loadingDone != null)
 				views.loadingDone.setVisibility(View.GONE);
-
-			if (views.betwenStartAndPauseImg != null)
+			if(views.betwenStartAndPauseImg != null)
 				views.betwenStartAndPauseImg.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.transparentDelImg != null)
-				views.transparentDelImg.setVisibility(View.GONE);
-		}
-	}
-
-	static void showBetweenStartAndPause(ViewHolder views) {
-		if (views != null) {
-			if (views.progress != null)
-				views.progress.setVisibility(View.GONE);
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.GONE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.stop();
-				}
-			}
-
-			if (views.loadingPause != null)
+			if(views.loadingPause != null)
 				views.loadingPause.setVisibility(View.GONE);
-			if (views.magazingDel != null)
+			if(views.magazingDel != null)
 				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.GONE);
-
-			if (views.betwenStartAndPauseImg != null)
-				views.betwenStartAndPauseImg.setVisibility(View.VISIBLE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.transparentDelImg != null)
-				views.transparentDelImg.setVisibility(View.GONE);
-		}
-	}
-
-	static void showCanDelState(ViewHolder views) {
-		if (views != null) {
-			if (views.progress != null)
-				views.progress.setVisibility(View.GONE);
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.GONE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.stop();
-				}
-			}
-
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.GONE);
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.GONE);
-
-			if (views.betwenStartAndPauseImg != null)
-				views.betwenStartAndPauseImg.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.VISIBLE);
-
-			if (views.transparentDelImg != null)
-				views.transparentDelImg.setVisibility(View.GONE);
-		}
-	}
-
-	static void showDelState(ViewHolder views) {
-		if (views != null) {
-			if (views.progress != null)
-				views.progress.setVisibility(View.GONE);
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.GONE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.stop();
-				}
-			}
-
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.GONE);
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.GONE);
-
-			if (views.betwenStartAndPauseImg != null)
-				views.betwenStartAndPauseImg.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-			
-			if(views.magazineImg != null){
-				final Bitmap bm = views.bm;
-				if (bm != null) {
-					Bitmap bitmap = setAlpha(bm, 40);
-					views.magazineImg.setImageBitmap(bitmap);
-				}
-			}
 		}
 	}
 	
@@ -348,7 +258,7 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener {
 		if(views.magazineImg != null){
 			final Bitmap bm = views.bm;
 			if (bm != null) {
-				Bitmap bitmap = setAlpha(bm, 100);
+				Bitmap bitmap = setAlpha(bm, FULL_ALPHA);
 				views.magazineImg.setImageBitmap(bitmap);
 			}
 		}
@@ -362,13 +272,18 @@ public class MultiDownListenerAndViews extends MultiDownLoaderListener {
 		if(views.magazineImg != null){
 			final Bitmap bm = views.bm;
 			if (bm != null) {
-				Bitmap bitmap = setAlpha(bm, 35);
+				Bitmap bitmap = setAlpha(bm, ALPHA);
 				views.magazineImg.setImageBitmap(bitmap);
 			}
 		}
 	}
 	
-
+	/**
+	 * number从1到100
+	 * @param sourceImg
+	 * @param number
+	 * @return
+	 */
 	static Bitmap setAlpha(Bitmap sourceImg, int number) {
 		int[] argb = new int[sourceImg.getWidth() * sourceImg.getHeight()];
 		sourceImg.getPixels(argb, 0, sourceImg.getWidth(), 0, 0,
