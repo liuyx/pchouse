@@ -81,7 +81,5 @@ public class MultiDownloadService extends Service {
 		
 		public void onPause();
 	}
-	
-	
 
 }

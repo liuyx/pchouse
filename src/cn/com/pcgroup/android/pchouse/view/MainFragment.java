@@ -57,9 +57,9 @@ public class MainFragment extends Fragment {
 	public static final String ZIP_FILE_PATH = getSdcardPath() + File.separator
 			+ "zipFiles";
 	public static final String PREF_NAME = "pchouse_magazing";
-	public static final int FLIP_MASK = 1;
-	private static final int SHOW_SET_PAGE = 1;
-	private static final int START_DOWNLOAD_SERVICE = 1;
+	public static final int FLIP_MASK = 0x1;
+	private static final int SHOW_SET_PAGE = 0x1;
+	private static final int START_DOWNLOAD_SERVICE = 0x1;
 	// ---------------SharePreference的键值---------------------------
 	private static final String KEY_ALREADY_DOWNLOADED = "pchouse_shelf_already_downloaded";
 	private static final String KEY_ALREADY_OCCUPY_SPACE = "pchouse_shelf_already_occupy_space";
@@ -74,12 +74,15 @@ public class MainFragment extends Fragment {
 	static int[] isStartServices;
 
 	private static final int SAVED_STATE_MASK = 0xE;
+	private ArrayList<BookShelf> bookShelfDatas; // 解析json得到Bean集合
 
 	/**
 	 * 该变量用于显示可以删除杂志选项时，保存任务的状态,因为显示删除杂志选项时，任务处于可以删除这个暂存态 当退出这个暂存态时，任务返回之前的状态
 	 */
 	@SuppressLint("UseSparseArrays")
 	private SparseArray<Integer> taskStates = new SparseArray<Integer>();
+	//--------正在下载的任务集合-------------------
+	private SparseArray<DownloadTask> isDownloadingTasks = new SparseArray<DownloadTask>();
 
 	/**
 	 * 切换书架单本模式和多本模式的变量
@@ -97,6 +100,8 @@ public class MainFragment extends Fragment {
 	 * url状态map，即给每个url监听一个状态，如暂停，运行等
 	 */
 	private HashMap<String, Integer> urlStates = new HashMap<String, Integer>();
+	// url与位置的map
+	private HashMap<String,Integer> urlPositions = new HashMap<String,Integer>();
 	private HeaderStateCount headerStateCount = new HeaderStateCount();
 
 	static final class HeaderStateCount {
@@ -268,19 +273,20 @@ public class MainFragment extends Fragment {
 	private MainFragmentImageAdapter setAdapterViewAdapter(
 			AdapterView<? super BaseAdapter> adapterView,
 			FrameLayout.LayoutParams p) {
-		final ArrayList<BookShelf> datas = mainActivity.getMagDatas();
+		ArrayList<BookShelf> bookShelfBeansList = bookShelfDatas;
+		bookShelfBeansList = mainActivity.getMagDatas();
 		MainFragmentImageAdapter adapter = null;
-		if (datas != null) {
-			int size = datas.size();
+		if (bookShelfBeansList != null) {
+			int size = bookShelfDatas.size();
 			if (size != 0) {
 				isStartServices = new int[size];
-				getStatesFromPrefForMap(datas);
+				getStatesFromPrefForMap(bookShelfBeansList);
 
 				// 初始化任务和监听器
 				// GridView和Gallery公用Adapter，会调用该方法两次，所以会导致重复添加任务和监听器，导致到时候统计数据不准，故第二次不应该再给容器添加监听器
 				if (globalTaskAndListeners.size() == 0)
-					initTasksAndListeners(datas, size);
-				adapter = new MainFragmentImageAdapter(datas, urlStates,
+					initTasksAndListeners(bookShelfBeansList, size);
+				adapter = new MainFragmentImageAdapter(bookShelfBeansList, urlStates,
 						mainActivity, p);
 				adapter.setTasksAndListeners(globalTaskAndListeners);
 				adapter.setIntent(startService);
@@ -425,9 +431,13 @@ public class MainFragment extends Fragment {
 				BookShelf bookShelf = datas.get(i);
 				if (bookShelf != null) {
 					String taskUrl = bookShelf.getUrl();
-					if (taskUrl != null)
-						urlStates.put(taskUrl, PreferencesUtils.getPreference(
-								context, PREF_NAME, taskUrl, 0));
+					if (taskUrl != null){
+						int state = PreferencesUtils.getPreference(
+								context, PREF_NAME, taskUrl, 0);
+						urlStates.put(taskUrl, state);
+						//初始化
+						urlPositions.put(taskUrl, i);
+					}
 				}
 			}
 		}
@@ -516,6 +526,12 @@ public class MainFragment extends Fragment {
 			}
 		});
 	}
+	
+	// 最近下载的期刊
+	private int recentDownloadedIssuePos = -1;
+	//最近下载的三期
+	private int[] recentThreeDownloadedIssuePos = new int[3];
+	private int recentThreeDownloadedIndex = 0;
 
 	private void setAdapterViewItemClickListener(
 			final AdapterView<? super BaseAdapter> adapterView,
@@ -525,6 +541,8 @@ public class MainFragment extends Fragment {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view,
 					int position, long id) {
+				recentDownloadedIssuePos = position;
+				recentThreeDownloadedIssuePos[recentThreeDownloadedIndex++ % 3] = position;
 
 				/**
 				 * 如果出现删除按钮，显示Dialog后退出该方法
@@ -533,6 +551,11 @@ public class MainFragment extends Fragment {
 					if (showDelDialog(position))
 						return;
 				performAdapterViewOnItemClick(position);
+				
+				// 若任务集合没有任务，则添加
+				if (isDownloadingTasks.get(position) == null) {
+					isDownloadingTasks.put(position, getTask(position));
+				}
 			}
 		});
 	}
@@ -670,6 +693,7 @@ public class MainFragment extends Fragment {
 								getTaskViews(position), position);
 						pauseTask(task);
 					}
+					
 				}
 			}
 		}
@@ -1103,6 +1127,51 @@ public class MainFragment extends Fragment {
 			this.listenerAndViews = listener;
 		}
 	}
+	
+	/**
+	 * 删除所有下载成功的任务
+	 */
+	void delAllSuccesslyDownloadedTask(){
+		for(Map.Entry<String, Integer> entry : urlStates.entrySet()){
+			if(entry.getValue() == DownloadTaskState.SUCCESS_STATE){
+				int index = urlPositions.get(entry.getKey());
+				delMagazine(index);
+			}
+		}
+	}
+	
+	/**
+	 * 保留最近下载一期
+	 */
+	void reserveTheMostRecentIssue(){
+		for(Map.Entry<String, Integer> entry : urlStates.entrySet()){
+			int state = entry.getValue();
+			int pos = urlPositions.get(entry.getKey());
+			if(pos != recentDownloadedIssuePos && state == DownloadTaskState.SUCCESS_STATE)
+				delMagazine(pos);
+		}
+	}
+	
+	/**
+	 * 保留最近下载三期
+	 */
+	void reserveTheMostThreeRecentIssue(){
+		for(Map.Entry<String, Integer> entry : urlStates.entrySet()){
+			int state = entry.getValue();
+			int pos = urlPositions.get(entry.getKey());
+			if(isContainsRecentThreeDownloadedIssueArray(pos) && state == DownloadTaskState.SUCCESS_STATE)
+				delMagazine(pos);
+		}
+	}
+	
+	private boolean isContainsRecentThreeDownloadedIssueArray(int pos){
+		for(int i = 0; i < recentThreeDownloadedIssuePos.length; i++){
+			if(recentThreeDownloadedIssuePos[i] == pos)
+				return true;
+		}
+		return false;
+	}
+	
 	
 	/**
 	 * 显示滑动的距离

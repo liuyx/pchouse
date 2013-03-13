@@ -18,6 +18,7 @@
         android:orientation="vertical" >
 
         <TextView
+            android:id="@+id/reserve_the_most_downloaded_issue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -26,6 +27,7 @@
             android:textSize="18sp" />
 
         <TextView
+            android:id="@+id/reserve_the_most_three_downloaded_issue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
@@ -34,6 +36,7 @@
             android:textSize="18sp" />
 
         <TextView
+            android:id="@+id/clear_all"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
