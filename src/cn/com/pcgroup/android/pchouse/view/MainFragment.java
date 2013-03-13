@@ -16,14 +16,11 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.Color;
 import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -33,8 +30,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Gallery;
 import android.widget.GridView;
@@ -53,6 +48,7 @@ import cn.com.pcgroup.android.service.MultiDownloadService;
 import cn.com.pcgroup.android.service.MultiDownloadService.MyBinder;
 import cn.com.pcgroup.common.android.utils.PreferencesUtils;
 
+
 public class MainFragment extends Fragment {
 	public static final String ZIP_FILE_PATH = getSdcardPath() + File.separator
 			+ "zipFiles";
@@ -65,7 +61,7 @@ public class MainFragment extends Fragment {
 	private static final String KEY_ALREADY_OCCUPY_SPACE = "pchouse_shelf_already_occupy_space";
 	private static final String KEY_IS_DOWNLOADING = "pchouse_shelf_is_downloading";
 
-	private static MainCatalogActivity mainActivity;
+	static MainCatalogActivity mainActivity;
 	private static Context context;
 	private final MyServiceConnection conn = new MyServiceConnection();
 	/**
@@ -74,7 +70,6 @@ public class MainFragment extends Fragment {
 	static int[] isStartServices;
 
 	private static final int SAVED_STATE_MASK = 0xE;
-	private ArrayList<BookShelf> bookShelfDatas; // 解析json得到Bean集合
 
 	/**
 	 * 该变量用于显示可以删除杂志选项时，保存任务的状态,因为显示删除杂志选项时，任务处于可以删除这个暂存态 当退出这个暂存态时，任务返回之前的状态
@@ -141,7 +136,7 @@ public class MainFragment extends Fragment {
 	/**
 	 * 显示设置按钮头部
 	 */
-	private ViewGroup normalHeader;
+	ViewGroup normalHeader;
 	/**
 	 * 显示杂志在手机中存储的状态
 	 */
@@ -157,7 +152,7 @@ public class MainFragment extends Fragment {
 	 */
 	private SlideView slideView;
 
-	private LinearLayout gridLayout;
+	LinearLayout gridLayout;
 	private GridView grid;
 	private Gallery gallery;
 
@@ -193,8 +188,8 @@ public class MainFragment extends Fragment {
 		initPrepareStuff();
 
 		// 初始化各个View的容器
-		initEachViewHolder();
 		initViews();
+		initEachViewHolder();
 	}
 
 	private void initPrepareStuff() {
@@ -202,11 +197,12 @@ public class MainFragment extends Fragment {
 				.getWidth() * 5 / 6 + 15;
 		getStatisticsFromPref();
 	}
+	
 
 	private void initEachViewHolder() {
-		SetPageHeader header = new SetPageHeader();
-		aboutUs = new AboutUs(header);
-		adviceResponse = new AdviceResonpse(header);
+		SetPageHeader header = new SetPageHeader(normalHeader,gridLayout,slideView,slideDeltaX);
+		aboutUs = new AboutUs(header,this);
+		adviceResponse = new AdviceResonpse(mainActivity, header);
 		logon = new Logon();
 	}
 
@@ -229,13 +225,16 @@ public class MainFragment extends Fragment {
 				.findViewById(R.id.long_click_header);
 		slideView = (SlideView) mainActivity.findViewById(R.id.slideview);
 		gridLayout = (LinearLayout) mainActivity.findViewById(R.id.grid_layout);
+		
+		//---------初始化GridView--------------
 		grid = (GridView) mainActivity.findViewById(R.id.grid);
 		FrameLayout.LayoutParams gridP = new FrameLayout.LayoutParams(
 				getGridViewImgWidth(), (int) (getGridViewImgWidth() * 1.5));
 		gridAdapter = setAdapterViewAdapter(grid, gridP);
 		setAdapterViewItemClickListener(grid, true);
 		setAdapterViewItemLongClick(grid, false);
-
+		
+		//--------初始化Gallery----------------
 		gallery = (Gallery) mainActivity.findViewById(R.id.gallery);
 		FrameLayout.LayoutParams galleryP = new FrameLayout.LayoutParams(
 				getDisplayWidth() / 2, (int) (getDisplayWidth() * 0.75));
@@ -273,11 +272,10 @@ public class MainFragment extends Fragment {
 	private MainFragmentImageAdapter setAdapterViewAdapter(
 			AdapterView<? super BaseAdapter> adapterView,
 			FrameLayout.LayoutParams p) {
-		ArrayList<BookShelf> bookShelfBeansList = bookShelfDatas;
-		bookShelfBeansList = mainActivity.getMagDatas();
+		ArrayList<BookShelf> bookShelfBeansList = mainActivity.getMagDatas();
 		MainFragmentImageAdapter adapter = null;
 		if (bookShelfBeansList != null) {
-			int size = bookShelfDatas.size();
+			int size = bookShelfBeansList.size();
 			if (size != 0) {
 				isStartServices = new int[size];
 				getStatesFromPrefForMap(bookShelfBeansList);
@@ -1188,7 +1186,6 @@ public class MainFragment extends Fragment {
 		aboutUs.show();
 	}
 	
-	
 	private Logon logon;
 	
 	//------------登录------------------
@@ -1209,166 +1206,10 @@ public class MainFragment extends Fragment {
 		adviceResponse.show();
 	}
 	
-	private class SetPageHeader{
-		private ViewGroup rootView;
-		private TextView title;
-		private ImageView backImg;
-		
-		public SetPageHeader(){
-			initViews();
-		}
-		
-		public void show(){
-			rootView.setVisibility(View.VISIBLE);
-		}
-		
-		public void hide(){
-			rootView.setVisibility(View.GONE);
-		}
-		
-		public void setTitle(String titleStr){
-			title.setText(titleStr);
-		}
-		
-		public void initViews(){
-			rootView = (ViewGroup) mainActivity.findViewById(R.id.set_page_head);
-			title = (TextView) mainActivity.findViewById(R.id.header_title);
-			backImg = (ImageView) mainActivity.findViewById(R.id.back_img);
-			backImg.setOnClickListener(listener);
-		}
-		
-		private final View.OnClickListener listener = new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				//显示书架头部
-				normalHeader.setVisibility(View.VISIBLE);
-				//隐藏当前的头部
-				hide();
-				//显示书架
-				gridLayout.setVisibility(View.VISIBLE);
-				slideToRight();
-				//显示设置页面
-				mainActivity.getLeftFragment().showRootView();
-			}
-		};
+	public AdviceResonpse getAdviceResponse() {
+		return adviceResponse;
 	}
-	
-	//--------------------关于我们-------------------------
-	private class AboutUs{
-		private SetPageHeader header;
-		private ViewGroup aboutUsRootView;
-		public AboutUs(SetPageHeader header){
-			this.header = header;
-			initViews();
-		}
-		
-		void initViews() {
-			aboutUsRootView = (ViewGroup) mainActivity.findViewById(R.id.about_us_root);
-		}
-		
-		/**
-		 * 显示关于我们页面
-		 */
-		void show() {
-			adviceResponse.hide();
-			showSetPageHeader();
-			showAboutUsBody();
-		}
-		
-		private void showSetPageHeader(){
-			normalHeader.setVisibility(View.GONE);
-			header.setTitle("关于我们");
-			header.show();
-		}
-		
-		private void showAboutUsBody() {
-			/*
-			 * 在这里显示About us webView
-			 */
-			gridLayout.setVisibility(View.GONE);
-			mainActivity.getLeftFragment().hideRootView();
-			aboutUs.loadAboutUs();
-		}
-		
-		void loadAboutUs(){
-			aboutUsRootView.setVisibility(View.VISIBLE);
-		}
-	}
-	
-	//-------------意见反馈-----------------------
-	private class AdviceResonpse{
-		private static final int ADVICE_INIT_LENGTH = 150;
-		private SetPageHeader header;
-		private ViewGroup rootView;
-		// 意见内容
-		private EditText advice;
-		// 提交按钮
-		private Button post;
-		private TextView inputWarnings;
-		
-		public AdviceResonpse(SetPageHeader header){
-			this.header = header;
-			initViews();
-		}
-		
-		private void initViews() {
-			rootView = (ViewGroup) mainActivity.findViewById(R.id.advice_response_root);
-			advice = (EditText) mainActivity.findViewById(R.id.advice_content);
-			post = (Button) mainActivity.findViewById(R.id.post_btn);
-			inputWarnings = (TextView) mainActivity.findViewById(R.id.input_warning);
-			monitorAdviceLenAndChangePostState(); 
-		}
-		
-		/**
-		 * 监视输入建议的长度，并显示提交按钮的状态
-		 */
-		private void monitorAdviceLenAndChangePostState(){
-			advice.addTextChangedListener(new TextWatcher() {
-				
-				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count) {
-					
-				}
-				
-				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count,
-						int after) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-				@Override
-				public void afterTextChanged(Editable s) {
-					if(s.length() > ADVICE_INIT_LENGTH){
-						post.setClickable(false);
-						int len = s.length() - ADVICE_INIT_LENGTH;
-						inputWarnings.setTextColor(Color.RED);
-						inputWarnings.setText("已超出" + len + "个字");
-					}else{
-						post.setClickable(true);
-						int len = ADVICE_INIT_LENGTH - s.length();
-						inputWarnings.setTextColor(Color.parseColor("#808080"));
-						inputWarnings.setText("还可以输入" + len + "个字");
-					}
-				}
-			});
-		}
-		
-		public void show(){
-			normalHeader.setVisibility(View.GONE);
-			header.setTitle("意见反馈");
-			header.show();
-			gridLayout.setVisibility(View.GONE);
-			rootView.setVisibility(View.VISIBLE);
-		}
-		
-		public void hide(){
-			header.hide();
-			rootView.setVisibility(View.GONE);
-		}
-	}
-	
+
 	private class Logon{
 		/**
 		 * 显示设置页面的头部
