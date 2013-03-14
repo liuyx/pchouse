@@ -4,14 +4,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import cn.com.pcgroup.android.pchouse.page.R;
 
-class AboutUs{
-	SetPageHeader header;
+public class AboutUs{
+	private SetPageHeader header;
 	private ViewGroup aboutUsRootView;
 	private MainFragment mainFragment;
 	public AboutUs(SetPageHeader header,MainFragment mainFragment){
 		this.header = header;
 		this.mainFragment = mainFragment;
 		initViews();
+	}
+	
+	public SetPageHeader getHeader(){
+		return header;
 	}
 	
 	void initViews() {

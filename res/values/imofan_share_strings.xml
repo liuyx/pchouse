@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="mf_share_success">分享成功</string>
+    <string name="mf_share_repeat">分享内容重复</string>
+    <string name="mf_share_token_invalid">access_token过期无效</string>
+    <string name="mf_share_image_too_large">抱歉，分享图片大小超出限制</string>
+    <string name="mf_share_image_type_error">抱歉，分享图片类型错误</string>
+    <string name="mf_share_text_too_large">抱歉，分享文字字数超出限制</string>
+    <string name="mf_share_net_error">抱歉，网络出错，稍后再试</string>
+    <string name="mf_share_out_send_limit">分享频率太快，超出限制</string>
+    <string name="mf_share_failed">分享失败</string>
+</resources>
+

@@ -62,6 +62,7 @@
                 android:textColor="#ffffff" />
 
             <TextView
+                android:id="@+id/sina_weibo_account"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
@@ -98,6 +99,7 @@
                 android:textColor="#ffffff" />
 
             <TextView
+                android:id="@+id/tencent_weibo_account"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
@@ -134,6 +136,7 @@
                 android:textColor="#ffffff" />
 
             <TextView
+                android:id="@+id/qzone_account"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"

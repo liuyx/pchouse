@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--全局组件尺寸定义文件-->
+<resources>
+    <dimen name="imofan_button_margin">10dip</dimen>
+    <dimen name="imofan_round_progress_bar_size">30dip</dimen>
+    <dimen name="imofan_banner_title_size">20sp</dimen>
+</resources>

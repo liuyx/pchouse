@@ -203,7 +203,6 @@ public class MainFragment extends Fragment {
 		SetPageHeader header = new SetPageHeader(normalHeader,gridLayout,slideView,slideDeltaX);
 		aboutUs = new AboutUs(header,this);
 		adviceResponse = new AdviceResonpse(mainActivity, header);
-		logon = new Logon();
 	}
 
 	/**
@@ -1186,21 +1185,21 @@ public class MainFragment extends Fragment {
 		aboutUs.show();
 	}
 	
-	private Logon logon;
 	
 	//------------登录------------------
 	
-	void showSinaLogon(){
-		logon.showSetPageHeader();
-	}
-	
-	void showTencentLogon(){
-		logon.showSetPageHeader();
-	}
-	
-	void showQZoneLogon(){
-		logon.showSetPageHeader();
-	}
+//	void showSinaLogon(){
+//		logon.showSetPageHeader();
+//		logon.loadSinaWeibo();
+//	}
+//	
+//	void showTencentLogon(){
+//		logon.showSetPageHeader();
+//	}
+//	
+//	void showQZoneLogon(){
+//		logon.showSetPageHeader();
+//	}
 	
 	void showAdviceResponse(){
 		adviceResponse.show();
@@ -1209,19 +1208,25 @@ public class MainFragment extends Fragment {
 	public AdviceResonpse getAdviceResponse() {
 		return adviceResponse;
 	}
-
-	private class Logon{
-		/**
-		 * 显示设置页面的头部
-		 */
-		private void showSetPageHeader() {
-			aboutUs.header.show();
-			normalHeader.setVisibility(View.GONE);
-			longTouchHeader.setVisibility(View.GONE);
-			
-			aboutUs.header.setTitle("登录");
-		}
-
+	
+	
+	//=================返回界面的view引用=======================
+	public ViewGroup getGridLayout(){
+		return gridLayout;
 	}
+	
+	public AboutUs getAboutUs(){
+		return aboutUs;
+	}
+	
+	public ViewGroup getNormalHeader(){
+		return normalHeader;
+	}
+	
+	public ViewGroup getLongTouchHeader(){
+		return longTouchHeader;
+	}
+	
+	
 
 }

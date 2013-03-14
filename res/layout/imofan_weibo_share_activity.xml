@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:orientation="vertical"
+        android:background="#A5ACB6">
+    <RelativeLayout android:id="@+id/imofan_weibo_share_activity_banner"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/imofan_app_banner_background"
+        android:layout_alignParentTop="true">
+        <ImageButton android:id="@+id/imofan_weibo_share_activity_back"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_centerVertical="true"
+           android:layout_alignParentLeft="true"
+           android:layout_marginLeft="@dimen/imofan_button_margin"
+           android:background="@null"
+           android:visibility="gone"/>
+        <TextView
+           android:id="@+id/imofan_title"
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:gravity = "center"
+           android:text="分享"
+           android:layout_centerVertical="true"
+           android:textSize="@dimen/imofan_banner_title_size"
+           android:textColor="@android:color/white"
+           android:textStyle="bold"/>
+    </RelativeLayout>
+    <FrameLayout android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dip"
+        android:background="@drawable/imofan_content_background">
+        <EditText android:id="@+id/imofan_weibo_share_activity_content"
+           android:layout_gravity="center"
+           android:paddingTop="5dip"
+           android:paddingLeft="5dip"
+           android:paddingRight="5dip"
+           android:layout_width="fill_parent"
+           android:layout_height="wrap_content"
+           android:paddingBottom="25dip"
+           android:gravity = "left|top"
+           android:background="@drawable/imofan_content_background"/>
+        <TextView android:id="@+id/imofan_weibo_share_count"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:text="还可以输入140个字"
+           android:layout_gravity="right|bottom"
+           android:layout_margin="5dip"/>
+        <ProgressBar
+            android:id="@+id/imofan_weibo_share_refresh_loadprogress"
+            android:layout_width="@dimen/imofan_round_progress_bar_size"
+            android:layout_height="@dimen/imofan_round_progress_bar_size"
+            android:indeterminateDrawable="@anim/imofan_round_progress_bar_1"
+            android:visibility="invisible"
+            android:layout_gravity="center"
+        />
+    </FrameLayout>
+    <TextView android:id="@+id/imofan_weibo_share_activity_submit"
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="right"
+           android:layout_marginRight="10dip"
+           android:background="@drawable/imofan_app_button_background"
+           android:text="发表"
+           android:textSize="18sp"
+           android:gravity="center"
+           android:textColor="#ffffff"
+          />
+    <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="left|center"
+           android:layout_marginLeft="10dip"
+           android:text="分享到："
+           android:gravity="center"
+           android:textSize="18sp"
+           android:textColor="#FEFEFF"
+          />
+    <LinearLayout android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="10dip"
+        >
+        <!-- 腾讯微博布局 -->
+        <RelativeLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/imofan_platform_background"
+            android:layout_weight="1"
+            android:id="@+id/imofan_qq_weibo_layout"
+            android:layout_marginRight="5dip">
+            <ImageView android:id="@+id/imofan_qq_weibo_img" 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/imofan_qq_weibo_unauth"
+                android:layout_marginLeft="10dip"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="weibo"
+                android:focusable="false"
+                />
+            <ImageView android:id="@+id/imofan_qq_weibo_selected_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:src="@drawable/imofan_platform_unselected"
+                android:layout_marginRight="10dip"
+                android:layout_alignParentRight="true"
+                android:focusable="false"/>
+            <TextView android:id="@+id/imofan_qq_weibo_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/imofan_qq_weibo_img"
+                android:layout_toLeftOf="@id/imofan_qq_weibo_selected_img"
+                android:layout_centerVertical="true"
+                android:text="腾讯微博"
+                android:textSize="13sp"
+                android:layout_margin="5dip"
+                android:focusable="false"/>
+        </RelativeLayout>
+        
+        <!-- qq空间布局 -->   
+        <RelativeLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/imofan_platform_background"
+            android:layout_weight="1"
+            android:id="@+id/imofan_qq_qzone_layout"
+            android:layout_marginLeft="5dip">
+            <ImageView android:id="@+id/imofan_qq_qzone_img" 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/imofan_qq_qzone_unauth"
+                android:layout_marginLeft="10dip"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="weibo"
+                android:focusable="false"
+                />
+            <ImageView android:id="@+id/imofan_qq_qzone_selected_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:src="@drawable/imofan_platform_unselected"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dip"
+                android:focusable="false"/>
+            <TextView android:id="@+id/imofan_qq_qzone_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/imofan_qq_qzone_img"
+                android:layout_toLeftOf="@id/imofan_qq_qzone_selected_img"
+                android:layout_centerVertical="true"
+                android:text="QQ空间"
+                android:textSize="13sp"
+                android:layout_margin="5dip"
+                android:focusable="false"/>
+            
+        </RelativeLayout>
+    </LinearLayout>
+     <LinearLayout android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        >
+        <!-- 新浪微博布局 -->
+        <RelativeLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/imofan_platform_background"
+            android:layout_weight="1"
+            android:id="@+id/imofan_sina_layout"
+            android:layout_marginRight="5dip">
+            <ImageView android:id="@+id/imofan_sina_img" 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/imofan_sina_unauth"
+                android:layout_marginLeft="10dip"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="weibo"
+                android:focusable="false"
+                />
+            <ImageView android:id="@+id/imofan_sina_selected_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:src="@drawable/imofan_platform_unselected"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dip"
+                android:focusable="false"/>
+            <TextView android:id="@+id/imofan_sina_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/imofan_sina_img"
+                android:layout_toLeftOf="@id/imofan_sina_selected_img"
+                android:layout_centerVertical="true"
+                android:text="新浪微博"
+                android:textSize="13sp"
+                android:layout_margin="5dip"
+                android:focusable="false"/>
+        </RelativeLayout>
+        
+        <!-- 人人网布局 -->   
+        <RelativeLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/imofan_platform_background"
+            android:layout_weight="1"
+            android:id="@+id/imofan_renren_layout"
+            android:layout_marginLeft="5dip"
+            android:visibility="invisible">
+            <ImageView android:id="@+id/imofan_renren_img" 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/imofan_renren_unauth"
+                android:layout_marginLeft="10dip"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="weibo"
+                android:focusable="false"
+                />
+            <ImageView android:id="@+id/imofan_renren_selected_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:src="@drawable/imofan_platform_unselected"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dip"
+                android:focusable="false"/>
+            <TextView android:id="@+id/imofan_renren_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/imofan_renren_img"
+                android:layout_toLeftOf="@id/imofan_renren_selected_img"
+                android:layout_centerVertical="true"
+                android:text="人人网"
+                android:textSize="13sp"
+                android:layout_margin="5dip"
+                android:focusable="false"/>
+            
+        </RelativeLayout>
+    </LinearLayout>
+    <TextView
+           android:layout_width="wrap_content"
+           android:layout_height="wrap_content"
+           android:layout_gravity="left|center"
+           android:layout_marginLeft="10dip"
+           android:layout_marginTop="10dip"
+           android:text="发送消息到："
+           android:gravity="center"
+           android:textSize="18sp"
+           android:textColor="#FEFEFF"
+          />
+    <LinearLayout android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="10dip"
+        >
+       <!-- 微信布局 -->
+        <RelativeLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/imofan_platform_background"
+            android:layout_weight="1"
+            android:id="@+id/imofan_weixin_layout"
+            android:layout_marginRight="5dip">
+            <ImageView android:id="@+id/imofan_weixin_img" 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/imofan_weixin_auth"
+                android:layout_marginLeft="10dip"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="weibo"
+                android:focusable="false"
+                />
+            <ImageView android:id="@+id/imofan_weixin_selected_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:src="@drawable/imofan_platform_unselected"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dip"
+                android:focusable="false"
+                android:visibility="invisible"/>
+            <TextView android:id="@+id/imofan_weixin_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/imofan_weixin_img"
+                android:layout_toLeftOf="@id/imofan_weixin_selected_img"
+                android:layout_centerVertical="true"
+                android:text="微信"
+                android:textSize="13sp"
+                android:layout_margin="5dip"
+                android:focusable="false"/>
+        </RelativeLayout>
+          <!-- xxx网布局 -->   
+        <RelativeLayout android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/imofan_platform_background"
+            android:layout_weight="1"
+            android:id="@+id/imofan_xxx_layout"
+            android:layout_marginLeft="5dip"
+            android:visibility="invisible">
+            <ImageView android:id="@+id/imofan_xxx_img" 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/imofan_renren_unauth"
+                android:layout_marginLeft="10dip"
+                android:layout_alignParentLeft="true"
+                android:layout_centerVertical="true"
+                android:contentDescription="weibo"
+                android:focusable="false"
+                />
+            <ImageView android:id="@+id/imofan_xxx_selected_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:src="@drawable/imofan_platform_unselected"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dip"
+                android:focusable="false"/>
+            <TextView android:id="@+id/imofan_xxx_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@id/imofan_renren_img"
+                android:layout_toLeftOf="@id/imofan_renren_selected_img"
+                android:layout_centerVertical="true"
+                android:text="人人网"
+                android:textSize="13sp"
+                android:layout_margin="5dip"
+                android:focusable="false"/>
+            
+        </RelativeLayout>
+    </LinearLayout>
+</LinearLayout>
