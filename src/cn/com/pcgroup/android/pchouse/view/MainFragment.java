@@ -13,7 +13,6 @@ import android.app.Service;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
@@ -578,15 +577,25 @@ public class MainFragment extends Fragment {
 	public class MyDialogClickListener implements
 			DialogInterface.OnClickListener {
 		private int pos;
-
-		public DialogInterface.OnClickListener setPos(int pos) {
+		
+		public MyDialogClickListener(int pos){
 			this.pos = pos;
-			return this;
+		}
+
+		public void setPos(int pos) {
+			this.pos = pos;
 		}
 
 		@Override
 		public void onClick(DialogInterface dialog, int which) {
-			delMagazine(pos);
+			switch(which){
+			case DialogInterface.BUTTON_POSITIVE:
+				delMagazine(pos);
+				break;
+			case DialogInterface.BUTTON_NEGATIVE:
+				dialog.dismiss();
+				break;
+			}
 		}
 	}
 
@@ -594,25 +603,19 @@ public class MainFragment extends Fragment {
 
 	private boolean showDelDialog(final int pos) {
 		ImageView delImg = getDelImg(pos);
+		if(dialogClickListener != null)
+			dialogClickListener.setPos(pos);
+		
 		if (delImg != null && delImg.getVisibility() == View.VISIBLE) {
 			if (builder == null) {
 				builder = new Builder(mainActivity);
 				builder.setMessage("确认删除").setTitle("删除杂志");
-
-				builder.setNegativeButton("取消", new OnClickListener() {
-
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.dismiss();
-					}
-				});
-
-				if (dialogClickListener == null) {
-					dialogClickListener = new MyDialogClickListener();
-				}
+				dialogClickListener = new MyDialogClickListener(pos);
+				builder.setNegativeButton("取消", dialogClickListener); 
+				builder.setPositiveButton("确认", dialogClickListener);
+				builder.create();
 			}
-			builder.setPositiveButton("确认", dialogClickListener.setPos(pos));
-			builder.create().show();
+			builder.show();
 			return true;
 		}
 		return false;
@@ -733,7 +736,7 @@ public class MainFragment extends Fragment {
 				if (task != null) {
 					if (downService != null) {
 						downService
-								.addTask(task, getListenerAndViews(position));
+								.addTask(task, getListenerAndViews(position),mainActivity);
 						// 将任务与url绑定添加到map中
 						urlRunningTasks.put(task.getUrl(), task);
 					}
@@ -1003,7 +1006,7 @@ public class MainFragment extends Fragment {
 
 						// 假如要求启动任务状态
 						if (state == DownloadTaskState.RUNNING_STATE) {
-							downloadService.addTask(task, listenerAndViews);
+							downloadService.addTask(task, listenerAndViews,mainActivity);
 						}
 
 						// 假如要求删除任务状态
