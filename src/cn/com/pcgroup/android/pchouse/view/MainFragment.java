@@ -16,7 +16,6 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.graphics.drawable.AnimationDrawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
@@ -124,10 +123,10 @@ public class MainFragment extends Fragment {
 	 * 关于我们页面
 	 */
 	private AboutUs aboutUs;
-	
+
 	// 意见反馈页面
 	private AdviceResonpse adviceResponse;
-	
+
 	/**
 	 * 显示设置页面
 	 */
@@ -197,7 +196,7 @@ public class MainFragment extends Fragment {
 				.getWidth() * 5 / 6 + 15;
 		getStatisticsFromPref();
 	}
-	
+
 
 	private void initEachViewHolder() {
 		SetPageHeader header = new SetPageHeader(normalHeader,gridLayout,slideView,slideDeltaX);
@@ -224,7 +223,7 @@ public class MainFragment extends Fragment {
 				.findViewById(R.id.long_click_header);
 		slideView = (SlideView) mainActivity.findViewById(R.id.slideview);
 		gridLayout = (LinearLayout) mainActivity.findViewById(R.id.grid_layout);
-		
+
 		//---------初始化GridView--------------
 		grid = (GridView) mainActivity.findViewById(R.id.grid);
 		FrameLayout.LayoutParams gridP = new FrameLayout.LayoutParams(
@@ -232,7 +231,7 @@ public class MainFragment extends Fragment {
 		gridAdapter = setAdapterViewAdapter(grid, gridP);
 		setAdapterViewItemClickListener(grid, true);
 		setAdapterViewItemLongClick(grid, false);
-		
+
 		//--------初始化Gallery----------------
 		gallery = (Gallery) mainActivity.findViewById(R.id.gallery);
 		FrameLayout.LayoutParams galleryP = new FrameLayout.LayoutParams(
@@ -408,13 +407,13 @@ public class MainFragment extends Fragment {
 		}
 		return null;
 	}
-	
+
 	boolean isLongTouchHeaderVisiblity(){
 		if(longTouchHeader.getVisibility() == View.VISIBLE)
 			return true;
 		return false;
 	}
-	
+
 
 	/**
 	 * 初始化各个任务的状态，将其值保存在urlStates Map中
@@ -523,7 +522,7 @@ public class MainFragment extends Fragment {
 			}
 		});
 	}
-	
+
 	// 最近下载的期刊
 	private int recentDownloadedIssuePos = -1;
 	//最近下载的三期
@@ -548,7 +547,7 @@ public class MainFragment extends Fragment {
 					if (showDelDialog(position))
 						return;
 				performAdapterViewOnItemClick(position);
-				
+
 				// 若任务集合没有任务，则添加
 				if (isDownloadingTasks.get(position) == null) {
 					isDownloadingTasks.put(position, getTask(position));
@@ -690,7 +689,7 @@ public class MainFragment extends Fragment {
 								getTaskViews(position), position);
 						pauseTask(task);
 					}
-					
+
 				}
 			}
 		}
@@ -786,7 +785,7 @@ public class MainFragment extends Fragment {
 						}
 					}
 				}
-				
+
 				/**
 				 * 控制显示或隐藏透明度
 				 */
@@ -800,7 +799,7 @@ public class MainFragment extends Fragment {
 			}
 		}
 	}
-	
+
 
 	/**
 	 * 隐藏右上角所有的标签views
@@ -817,7 +816,7 @@ public class MainFragment extends Fragment {
 	 */
 	private void setLongTouchHeaderState() {
 		statisticsTaskData();
-		flushHeaderData();
+		setHeaderData();
 	}
 
 	/**
@@ -843,6 +842,11 @@ public class MainFragment extends Fragment {
 				occupy += listAndViews.occupy;
 			}
 		}
+		getHeaderStateCount(hasDownloaded, isDownloading, occupy);
+	}
+	
+	private void getHeaderStateCount(int hasDownloaded, int isDownloading,
+			int occupy) {
 		headerStateCount.downloaded = hasDownloaded;
 		headerStateCount.downloading = isDownloading;
 		headerStateCount.occupy = occupy > headerStateCount.occupy ? occupy
@@ -858,13 +862,21 @@ public class MainFragment extends Fragment {
 	private void onDelFreshTaskData(int pos) {
 		int state = taskStates.get(pos) == null ? DownloadTaskState.UN_BEGIN_STATE : taskStates.get(pos);
 		DownloadTask task = getTask(pos);
-
-		// 清空监听器的占用空间数据
+		
+		clearListAndViewsOccupyData(pos);
+		
+		freshHeaderData(state, task);
+		
+		setHeaderData();
+	}
+	
+	private void clearListAndViewsOccupyData(int pos) {
 		MultiDownListenerAndViews listAndViews = getListenerAndViews(pos);
 		if (listAndViews != null)
 			listAndViews.clearOccupyData();
-
-		// 更新头部数据
+	}
+	
+	private void freshHeaderData(int state, DownloadTask task) {
 		if (state == DownloadTaskState.PAUSE_STATE) {
 			headerStateCount.downloading--;
 			if (task != null) {
@@ -880,15 +892,12 @@ public class MainFragment extends Fragment {
 						/ (1024 * 1024);
 			}
 		}
-
-		flushHeaderData();
-		
 	}
 
 	/**
 	 * 显示刷新数据
 	 */
-	private void flushHeaderData() {
+	private void setHeaderData() {
 		hasDownloadedNum.setText(headerStateCount.downloaded + "本");
 		hasOccupySpace.setText(headerStateCount.occupy + "MB");
 		isDownloadingNum.setText(headerStateCount.downloading + "本");
@@ -1084,35 +1093,6 @@ public class MainFragment extends Fragment {
 		// mainActivity.unbindService(conn);
 	}
 
-	/**
-	 * 下载完成时显示views的状态
-	 * 
-	 * @param views
-	 */
-	static void showDone(ViewHolder views) {
-		if (views != null) {
-			if (views.progress != null) {
-				views.progress.setVisibility(View.GONE);
-			}
-			if (views.loadingProgress != null) {
-				views.loadingProgress.setVisibility(View.GONE);
-				final AnimationDrawable anim = (AnimationDrawable) views.loadingProgress
-						.getBackground();
-				if (anim != null) {
-					anim.stop();
-				}
-			}
-
-			if (views.loadingPause != null)
-				views.loadingPause.setVisibility(View.GONE);
-
-			if (views.magazingDel != null)
-				views.magazingDel.setVisibility(View.GONE);
-
-			if (views.loadingDone != null)
-				views.loadingDone.setVisibility(View.VISIBLE);
-		}
-	}
 
 	public static final class DownloadTaskAndListenerAndViews {
 		DownloadTask task;
@@ -1124,7 +1104,7 @@ public class MainFragment extends Fragment {
 			this.listenerAndViews = listener;
 		}
 	}
-	
+
 	/**
 	 * 删除所有下载成功的任务
 	 */
@@ -1136,7 +1116,7 @@ public class MainFragment extends Fragment {
 			}
 		}
 	}
-	
+
 	/**
 	 * 保留最近下载一期
 	 */
@@ -1148,7 +1128,7 @@ public class MainFragment extends Fragment {
 				delMagazine(pos);
 		}
 	}
-	
+
 	/**
 	 * 保留最近下载三期
 	 */
@@ -1160,7 +1140,7 @@ public class MainFragment extends Fragment {
 				delMagazine(pos);
 		}
 	}
-	
+
 	private boolean isContainsRecentThreeDownloadedIssueArray(int pos){
 		for(int i = 0; i < recentThreeDownloadedIssuePos.length; i++){
 			if(recentThreeDownloadedIssuePos[i] == pos)
@@ -1168,8 +1148,7 @@ public class MainFragment extends Fragment {
 		}
 		return false;
 	}
-	
-	
+
 	/**
 	 * 显示滑动的距离
 	 */
@@ -1177,56 +1156,39 @@ public class MainFragment extends Fragment {
 		return slideDeltaX;
 	}
 
-
 	/**
 	 * 显示关于我们页面
 	 */
 	void showAboutUs() {
 		aboutUs.show();
 	}
-	
-	
-	//------------登录------------------
-	
-//	void showSinaLogon(){
-//		logon.showSetPageHeader();
-//		logon.loadSinaWeibo();
-//	}
-//	
-//	void showTencentLogon(){
-//		logon.showSetPageHeader();
-//	}
-//	
-//	void showQZoneLogon(){
-//		logon.showSetPageHeader();
-//	}
-	
+
 	void showAdviceResponse(){
 		adviceResponse.show();
 	}
-	
+
 	public AdviceResonpse getAdviceResponse() {
 		return adviceResponse;
 	}
-	
-	
+
+
 	//=================返回界面的view引用=======================
 	public ViewGroup getGridLayout(){
 		return gridLayout;
 	}
-	
+
 	public AboutUs getAboutUs(){
 		return aboutUs;
 	}
-	
+
 	public ViewGroup getNormalHeader(){
 		return normalHeader;
 	}
-	
+
 	public ViewGroup getLongTouchHeader(){
 		return longTouchHeader;
 	}
-	
-	
+
+
 
 }

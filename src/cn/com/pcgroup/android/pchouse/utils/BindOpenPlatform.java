@@ -26,14 +26,17 @@ public class BindOpenPlatform{
 	private MFSnsAuthListener authListener;
 	private AccountLogoutForViews accountLogout;
 	private AlertDialog.Builder dialogBuilder;
+	private int viewResId;
 	
 	/**
 	 * 认证某个具体的开放平台，注意，在调用该方法之前,可以调用{@link setOnAuthListener},这样，便可以使用
 	 * 用户自定义的监听器，否则，使用默认的监听器{@link DefaultAuthListener}
-	 * @param act
-	 * @param platform
+	 * @param act 传入当前Activity
+	 * @param platform 具体的认证平台，取值范围为setOnAccountLogoutForViewsListener,MFSnsService.PLATFORM_QQ_WEIBO,MFSnsService.PLATFORM_QQ_QZONE
+	 * @param viewResId View的资源id
 	 */
-	public void auth(Activity act,int platform){
+	public void auth(Activity act,int platform,int viewResId){
+		this.viewResId = viewResId;
 		MFSnsAuthListener snsAuthListener;
 		if(authListener != null){
 			snsAuthListener = authListener;
@@ -42,10 +45,10 @@ public class BindOpenPlatform{
 		}
 		
 		if (act != null) {
-			if (!MFSnsUtil.isAuthorized(act, platform)) {
-				MFSnsService.auth(act, platform, snsAuthListener);
-			}else{
+			if (MFSnsUtil.isAuthorized(act, platform)) {
 				showLogoutDialog(act,platform);
+			}else{
+				MFSnsService.auth(act, platform, snsAuthListener);
 			}
 		}
 	}
@@ -62,7 +65,7 @@ public class BindOpenPlatform{
 	 * 当注销账户时，注册一个与界面相关的回调方法
 	 * @param accountLogout
 	 */
-	public void setOnAccountLogoutForViews(AccountLogoutForViews accountLogout){
+	public void setOnAccountLogoutForViewsListener(AccountLogoutForViews accountLogout){
 		this.accountLogout = accountLogout;
 	}
 	
@@ -70,24 +73,46 @@ public class BindOpenPlatform{
 	 * 注册一个当某一个具体开放平台认证成功后与界面相关的回调方法
 	 * @param authSuccess
 	 */
-	public void setOnAuthSuccessForViews(AuthSuccessForViews authSuccess){
+	public void setOnAuthSuccessForViewsListener(AuthSuccessForViews authSuccess){
 		defaultListener.authSuccess = authSuccess;
 	}
 	
+	private class MyDialogPostiveClickListener implements DialogInterface.OnClickListener{
+		private int platform;
+		private Context context;
+		
+		public MyDialogPostiveClickListener(Context ctx,int platform){
+			context = ctx;
+			this.platform = platform;
+		}
+		
+		public DialogInterface.OnClickListener setPlatform(int platform){
+			this.platform = platform;
+			return this;
+		}
+		
+		@Override
+		public void onClick(DialogInterface dialog, int which) {
+			logoutAndItsStatusToast(context,platform);
+			if(accountLogout != null){
+				accountLogout.onAccountLogoutForViews(viewResId);
+			}
+		}
+		
+	}
+	
+	private MyDialogPostiveClickListener dialogPostiveListener;
+	
+	
 	private void showLogoutDialog(final Context context,final int platform){
+		if(dialogPostiveListener != null)
+			dialogPostiveListener.setPlatform(platform);
+		
 		if(dialogBuilder == null){
 			dialogBuilder = new AlertDialog.Builder(context);
 			dialogBuilder.setTitle("请选择操作");
-			dialogBuilder.setPositiveButton("注销", new OnClickListener() {
-				
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					logoutAndItsStatusToast(context,platform);
-					if(accountLogout != null){
-						accountLogout.onAccountLogoutForViews(which);
-					}
-				}
-			});
+			dialogPostiveListener = new MyDialogPostiveClickListener(context,platform);
+			dialogBuilder.setPositiveButton("注销", dialogPostiveListener);
 			
 			dialogBuilder.setNegativeButton("取消", new OnClickListener() {
 				

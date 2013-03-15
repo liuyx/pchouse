@@ -14,19 +14,15 @@ import android.widget.LinearLayout;
 import android.widget.LinearLayout.LayoutParams;
 import android.widget.PopupWindow;
 import android.widget.TextView;
-import cn.com.pcgroup.android.pchouse.global.Config;
 import cn.com.pcgroup.android.pchouse.page.MainCatalogActivity;
 import cn.com.pcgroup.android.pchouse.page.R;
 import cn.com.pcgroup.android.pchouse.utils.BindOpenPlatform;
-import cn.com.pcgroup.common.android.utils.PreferencesUtils;
 
 import com.imofan.android.develop.sns.MFSnsService;
 import com.imofan.android.develop.sns.MFSnsUser;
+import com.imofan.android.develop.sns.MFSnsUtil;
 
 public class LeftFragment extends Fragment {
-	private static final String KEY_ACCOUNT_MANAGE_SINA_WEIBO_USR_NAME = "sina_weibo_usr_name";
-	private static final String KEY_ACCOUNT_MANAGE_TENCENT_WEIBO_USR_NAME = "tencent_weibo_usr_name";
-	private static final String KEY_ACCOUNT_MANAGE_QZONE_USR_NAME = "qzone_usr_name";
 	private static MainCatalogActivity mainActivity;
 
 	private MainFragment mainFragment;
@@ -49,36 +45,39 @@ public class LeftFragment extends Fragment {
 	// -----------账号管理---------------------
 	private ViewGroup accountManageDetailLayout;
 	private ViewGroup sinaAccountManage;
-	private ViewGroup tencentWeiBoAccountManage;
-	private ViewGroup qzoneAccountManage;
+	private ViewGroup qqAccountManage;
 	private int showAccountManageDetail;
 	private TextView sinaWeiboAccountInfo;
-	private TextView tencentWeiboAccountInfo;
-	private TextView qzoneAccountInfo;
+	private TextView qqAccountInfo;
 	private BindOpenPlatform bindOpenPlatform = new BindOpenPlatform();
-	private String sinaUsrNickName;
-	private String tencentUsrNickName;
-	private String qzoneUsrNickName;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
 		return inflater.inflate(R.layout.left_layout, container, false);
 	}
+	
+	public ViewGroup getRootView() {
+		return rootView;
+	}
+	
+	void showRootView() {
+		rootView.setVisibility(View.VISIBLE);
+	}
+
+	void hideRootView() {
+		rootView.setVisibility(View.GONE);
+	}
+
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		mainActivity = (MainCatalogActivity) getActivity();
 		mainFragment = mainActivity.getMainFragment();
-		initDatas();
 		initViews();
 	}
-	
-	private void initDatas(){
-		sinaUsrNickName = PreferencesUtils.getPreference(mainActivity, Config.PREF_NAME, KEY_ACCOUNT_MANAGE_SINA_WEIBO_USR_NAME, "");
-		tencentUsrNickName = PreferencesUtils.getPreference(mainActivity, Config.PREF_NAME, KEY_ACCOUNT_MANAGE_TENCENT_WEIBO_USR_NAME, "");
-		qzoneUsrNickName = PreferencesUtils.getPreference(mainActivity, Config.PREF_NAME, KEY_ACCOUNT_MANAGE_QZONE_USR_NAME, "");
-	}
+
 
 	private void initViews() {
 		rootView = (ViewGroup) mainActivity
@@ -114,6 +113,8 @@ public class LeftFragment extends Fragment {
 				.findViewById(R.id.reserve_the_most_three_downloaded_issue);
 
 		// -------账号管理------------
+		bindOpenPlatform.setOnAuthSuccessForViewsListener(authSuccess);
+		bindOpenPlatform.setOnAccountLogoutForViewsListener(accountLogout);
 		accountManageLayout = (ViewGroup) mainActivity
 				.findViewById(R.id.account_manage);
 		accountManageLayout.setOnClickListener(listener);
@@ -121,31 +122,27 @@ public class LeftFragment extends Fragment {
 				.findViewById(R.id.account_manage_detail_layout);
 		sinaAccountManage = (ViewGroup) mainActivity
 				.findViewById(R.id.sina_account_manage);
-		tencentWeiBoAccountManage = (ViewGroup) mainActivity
-				.findViewById(R.id.tencent_weibo_account_manage);
-		qzoneAccountManage = (ViewGroup) mainActivity
-				.findViewById(R.id.qzone_account_manage);
+		qqAccountManage = (ViewGroup) mainActivity
+				.findViewById(R.id.tencent_account_manage);
 		sinaAccountManage.setOnClickListener(listener);
-		tencentWeiBoAccountManage.setOnClickListener(listener);
-		qzoneAccountManage.setOnClickListener(listener);
+		qqAccountManage.setOnClickListener(listener);
 		sinaWeiboAccountInfo = (TextView) mainActivity
 				.findViewById(R.id.sina_weibo_account);
-		tencentWeiboAccountInfo = (TextView) mainActivity
-				.findViewById(R.id.tencent_weibo_account);
-		qzoneAccountInfo = (TextView) mainActivity
-				.findViewById(R.id.qzone_account);
+		qqAccountInfo = (TextView) mainActivity
+				.findViewById(R.id.tencent_account_info);
 		
-		if(!sinaUsrNickName.equals("")){
-			sinaWeiboAccountInfo.setText(sinaUsrNickName);
+		if(MFSnsUtil.isAuthorized(mainActivity, MFSnsService.PLATFORM_SINA_WEIBO)){
+			String nickName = MFSnsUtil.getOpenUser(mainActivity, MFSnsService.PLATFORM_SINA_WEIBO).getNickname();
+			if(nickName != null)
+				sinaWeiboAccountInfo.setText(nickName);
 		}
 		
-		if(!tencentUsrNickName.equals("")){
-			tencentWeiboAccountInfo.setText(tencentUsrNickName);
+		if(MFSnsUtil.isAuthorized(mainActivity, MFSnsService.PLATFORM_QQ_WEIBO)){
+			String nickName = MFSnsUtil.getOpenUser(mainActivity, MFSnsService.PLATFORM_QQ_WEIBO).getNickname();
+			if(nickName != null)
+				qqAccountInfo.setText(nickName);
 		}
-		
-		if(!qzoneUsrNickName.equals("")){
-			qzoneAccountInfo.setText(qzoneUsrNickName);
-		}
+
 
 		// ----------意见反馈---------
 		adviceResponseLayout = (ViewGroup) mainActivity
@@ -169,22 +166,12 @@ public class LeftFragment extends Fragment {
 				showAccountManageDetailLayout();
 			} else if (id == sinaAccountManage.getId()) {
 				// 新浪微博登陆界面
-				bindOpenPlatform.setOnAuthSuccessForViews(authSuccess);
-				bindOpenPlatform.setOnAccountLogoutForViews(accountLogout);
 				bindOpenPlatform.auth(mainActivity,
-						MFSnsService.PLATFORM_SINA_WEIBO);
-			} else if (id == tencentWeiBoAccountManage.getId()) {
-				// 腾讯微博登陆界面
-				bindOpenPlatform.setOnAuthSuccessForViews(authSuccess);
-				bindOpenPlatform.setOnAccountLogoutForViews(accountLogout);
+						MFSnsService.PLATFORM_SINA_WEIBO, id);
+			} else if (id == qqAccountManage.getId()) {
+				// qq登陆界面
 				bindOpenPlatform.auth(mainActivity,
-						MFSnsService.PLATFORM_QQ_WEIBO);
-			} else if (id == qzoneAccountManage.getId()) {
-				// QQ空间登陆界面
-				bindOpenPlatform.setOnAuthSuccessForViews(authSuccess);
-				bindOpenPlatform.setOnAccountLogoutForViews(accountLogout);
-				bindOpenPlatform.auth(mainActivity,
-						MFSnsService.PLATFORM_QQ_QZONE);
+						MFSnsService.PLATFORM_QQ_WEIBO, id);
 			} else if (id == adviceResponseLayout.getId()) {
 				// 意见反馈
 				rootView.setVisibility(View.INVISIBLE);
@@ -205,52 +192,32 @@ public class LeftFragment extends Fragment {
 			case MFSnsService.PLATFORM_QQ_WEIBO:
 				showAndSaveTencentWeiboNickName(nickName);
 				break;
-			case MFSnsService.PLATFORM_QQ_QZONE:
-				showAndSaveQZoneWeiboNickName(nickName);
-				break;
 			}
 		}
-		
-		private void showAndSaveSinaWeiboNickName(String nickName){
+
+		private void showAndSaveSinaWeiboNickName(String nickName) {
 			if (nickName != null) {
 				sinaWeiboAccountInfo.setText(nickName);
-				PreferencesUtils.setPreferences(mainActivity,
-						Config.PREF_NAME,
-						KEY_ACCOUNT_MANAGE_SINA_WEIBO_USR_NAME, nickName);
 			}
 		}
-		
-		private void showAndSaveTencentWeiboNickName(String nickName){
+
+		private void showAndSaveTencentWeiboNickName(String nickName) {
 			if (nickName != null) {
-				tencentWeiboAccountInfo.setText(nickName);
-				PreferencesUtils
-						.setPreferences(mainActivity, Config.PREF_NAME,
-								KEY_ACCOUNT_MANAGE_TENCENT_WEIBO_USR_NAME,
-								nickName);
+				qqAccountInfo.setText(nickName);
 			}
 		}
-		
-		private void showAndSaveQZoneWeiboNickName(String nickName){
-			if (nickName != null) {
-				qzoneAccountInfo.setText(nickName);
-				PreferencesUtils.setPreferences(mainActivity,
-						Config.PREF_NAME,
-						KEY_ACCOUNT_MANAGE_QZONE_USR_NAME, nickName);
-			}
-		}
+
 	};
-	
+
 	private final BindOpenPlatform.AccountLogoutForViews accountLogout = new BindOpenPlatform.AccountLogoutForViews() {
-		
+
 		@Override
 		public void onAccountLogoutForViews(int viewId) {
 			/* 注销新浪微博账户 */
-			if(viewId == sinaAccountManage.getId()){
+			if (viewId == sinaAccountManage.getId()) {
 				sinaWeiboAccountInfo.setText("登录");
-			}else if(viewId == tencentWeiBoAccountManage.getId()){/* 注销腾讯微博账户 */
-				tencentWeiboAccountInfo.setText("登录");
-			}else if(viewId == qzoneAccountManage.getId()){/* 注销QQ空间账户 */
-				qzoneAccountInfo.setText("登录");
+			} else if (viewId == qqAccountManage.getId()) {/* 注销qq账户 */
+				qqAccountInfo.setText("登录");
 			}
 		}
 	};
@@ -329,18 +296,6 @@ public class LeftFragment extends Fragment {
 						| WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
 				PixelFormat.TRANSLUCENT);
 		return lp;
-	}
-
-	void showRootView() {
-		rootView.setVisibility(View.VISIBLE);
-	}
-
-	void hideRootView() {
-		rootView.setVisibility(View.GONE);
-	}
-
-	public ViewGroup getRootView() {
-		return rootView;
 	}
 
 }

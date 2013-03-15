@@ -249,7 +249,7 @@ public class MainFragmentImageAdapter extends BaseAdapter {
 			startShowProgress(position, taskUrl, views);
 			break;
 		case MultiDownListenerAndViews.DownloadTaskState.SUCCESS_STATE:
-			MainFragment.showDone(views);
+			MultiDownListenerAndViews.showDone(views);
 			break;
 		case MultiDownListenerAndViews.DownloadTaskState.SHOW_DEL_STATE:
 			MultiDownListenerAndViews.showCanDelState(views);
